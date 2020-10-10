@@ -47,6 +47,14 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   double videoWidth;
   double videoMargin;
 
+  //Переменные под зоны дабл-тапа
+  double doubleTapRMargin = 36;
+  double doubleTapRWidth = 400;
+  double doubleTapRHeight = 160;
+  double doubleTapLMargin = 10;
+  double doubleTapLWidth = 400;
+  double doubleTapLHeight = 160;
+
   @override
   void initState() {
     _quality = QualityLinks(_id); //Create class
@@ -91,19 +99,20 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                   double delta = MediaQuery.of(context).size.width -
                       MediaQuery.of(context).size.height *
                           _controller.value.aspectRatio;
-                  if (MediaQuery.of(context).orientation ==
-                          Orientation.portrait ||
-                      delta < 0) {
-                    videoHeight = MediaQuery.of(context).size.width /
-                        _controller.value.aspectRatio;
+                  if (MediaQuery.of(context).orientation == Orientation.portrait || delta < 0) {
+                    videoHeight = MediaQuery.of(context).size.width / _controller.value.aspectRatio;
                     videoWidth = MediaQuery.of(context).size.width;
                     videoMargin = 0;
                   } else {
                     videoHeight = MediaQuery.of(context).size.height - 36;
                     videoWidth = videoHeight * _controller.value.aspectRatio;
-                    videoMargin =
-                        (MediaQuery.of(context).size.width - videoWidth) / 2;
+                    videoMargin = (MediaQuery.of(context).size.width - videoWidth) / 2;
                   }
+
+                  doubleTapRWidth = videoWidth;
+                  doubleTapRHeight = videoHeight - 36;
+                  doubleTapLWidth = videoWidth;
+                  doubleTapLHeight = videoHeight;
 
                   if (_seek && _controller.value.duration.inSeconds > 2) {
                     _controller.seekTo(Duration(seconds: position));
@@ -135,21 +144,47 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
           onTap: () {
             setState(() {
               _overlay = !_overlay;
+              if (_overlay){
+                doubleTapRHeight = videoHeight - 36;
+                doubleTapLHeight = videoHeight - 10;
+                doubleTapRMargin = 36;
+                doubleTapLMargin = 10;
+              }
+              else if (!_overlay){
+                doubleTapRHeight = videoHeight + 36;
+                doubleTapLHeight = videoHeight + 16;
+                doubleTapRMargin = 0;
+                doubleTapLMargin = 0;
+              }
             });
           },
         ),
-        GestureDetector(
+        GestureDetector( //======= Перемотка назад =======//
             child: Container(
-              width: MediaQuery.of(context).size.width / 2 - 30,
-              height: MediaQuery.of(context).size.width / 16 * 9 - 40,
-              margin: EdgeInsets.fromLTRB(0, 0, MediaQuery.of(context).size.width / 2 + 30, 40),
+              width: doubleTapLWidth / 2 - 30,
+              height: doubleTapLHeight - 46,
+              margin: EdgeInsets.fromLTRB(0, 10, doubleTapLWidth / 2 + 30, doubleTapLMargin + 20),
               decoration: BoxDecoration(
                 //color: Colors.red,
               ),
             ),
+            // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
+            // "Во весь экран" и "Качество" при включенном overlay
             onTap: () {
               setState(() {
                 _overlay = !_overlay;
+                if (_overlay){
+                  doubleTapRHeight = videoHeight - 36;
+                  doubleTapLHeight = videoHeight - 10;
+                  doubleTapRMargin = 36;
+                  doubleTapLMargin = 10;
+                }
+                else if (!_overlay){
+                  doubleTapRHeight = videoHeight + 36;
+                  doubleTapLHeight = videoHeight + 16;
+                  doubleTapRMargin = 0;
+                  doubleTapLMargin = 0;
+                }
               });
             },
             onDoubleTap:(){
@@ -158,10 +193,10 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               });
             }
         ), GestureDetector(
-            child: Container(
-              width: MediaQuery.of(context).size.width / 2 - 45,
-              height: MediaQuery.of(context).size.width / 16 * 9 - 60,
-              margin: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width / 2 + 45, 0, 0, 60),
+            child: Container(//======= Перемотка вперед =======//
+              width: doubleTapRWidth / 2 - 45,
+              height: doubleTapRHeight - 60,
+              margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45, doubleTapRMargin, 0, doubleTapRMargin+20),
               decoration: BoxDecoration(
                 //color: Colors.red,
               ),
@@ -169,6 +204,18 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             onTap: () {
               setState(() {
                 _overlay = !_overlay;
+                if (_overlay){
+                  doubleTapRHeight = videoHeight - 36;
+                  doubleTapLHeight = videoHeight - 10;
+                  doubleTapRMargin = 36;
+                  doubleTapLMargin = 10;
+                }
+                else if (!_overlay){
+                  doubleTapRHeight = videoHeight + 36;
+                  doubleTapLHeight = videoHeight + 16;
+                  doubleTapRMargin = 0;
+                  doubleTapLMargin = 0;
+                }
               });
             },
             onDoubleTap:(){

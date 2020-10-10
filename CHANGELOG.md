@@ -1,3 +1,9 @@
+## [0.1.4] - Fixed bugs
+
+### Fixed
+* The quality button is covered with a double tap zone, so it did not function;
+* In full screen mode, the video quality list did not scroll.
+
 ## [0.1.3] - Great functionality improvement.
 
 ### Added:

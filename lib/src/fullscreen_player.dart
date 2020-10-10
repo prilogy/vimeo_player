@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'quality_links.dart';
 import 'dart:async';
 
+// ignore: must_be_immutable
 class FullscreenPlayer extends StatefulWidget{
   final String id;
   final bool autoPlay;
@@ -22,7 +23,7 @@ class FullscreenPlayer extends StatefulWidget{
     this.controller,
     this.position,
     this.initFuture,
-    this. qualityValue,
+    this.qualityValue,
     Key key,
   }) : super(key: key);
 
@@ -56,14 +57,29 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   double videoWidth;
   double videoMargin;
 
+  double doubleTapMargin = 40;
+  double doubleTapWidth = 400;
+  double doubleTapHeight = 200;
+
+  //Переменные под зоны дабл-тапа
+  double doubleTapRMargin = 36;
+  double doubleTapRWidth = 700;
+  double doubleTapRHeight = 300;
+  double doubleTapLMargin = 10;
+  double doubleTapLWidth = 700;
+  double doubleTapLHeight = 400;
+
   @override
   void initState() {
     //Инициализация контроллеров видео при получении данных из Vimeo
     _controller = controller;
-//    _controller = VideoPlayerController.network(qualityValue);
-//    _controller.setLooping(looping);
-//    initFuture = _controller.initialize();
     if (autoPlay) _controller.play();
+
+    // Подгрузка списка качеств видео
+    _quality = QualityLinks(_id); //Create class
+    _quality.getQualitiesSync().then((value) {
+      _qualityValues = value;
+    });
 
     setState(() {
       SystemChrome.setPreferredOrientations([
@@ -106,6 +122,11 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                             (MediaQuery.of(context).size.width - videoWidth) / 2;
                       }
 
+                      doubleTapRWidth = videoWidth;
+                      doubleTapRHeight = videoHeight - 36;
+                      doubleTapLWidth = videoWidth;
+                      doubleTapLHeight = videoHeight;
+
                       if (_seek && fullScreen){
                         _controller.seekTo(Duration(seconds: position));
                         _seek = false;
@@ -140,14 +161,26 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               onTap: () {
                 setState(() {
                   _overlay = !_overlay;
+                  if (_overlay){
+                    doubleTapRHeight = videoHeight - 36;
+                    doubleTapLHeight = videoHeight - 10;
+                    doubleTapRMargin = 36;
+                    doubleTapLMargin = 10;
+                  }
+                  else if (!_overlay){
+                    doubleTapRHeight = videoHeight + 36;
+                    doubleTapLHeight = videoHeight;
+                    doubleTapRMargin = 0;
+                    doubleTapLMargin = 0;
+                  }
                 });
               },
             ),
             GestureDetector(
                 child: Container(
-                  width: MediaQuery.of(context).size.width / 2 - 30,
-                  height: MediaQuery.of(context).size.width * 16 / 9 - 36,
-                  margin: EdgeInsets.fromLTRB(0, 0, MediaQuery.of(context).size.width / 2 + 30, 40),
+                  width: doubleTapLWidth / 2 - 30,
+                  height: doubleTapLHeight - 44,
+                  margin: EdgeInsets.fromLTRB(0, 0, doubleTapLWidth / 2 + 30, 40),
                   decoration: BoxDecoration(
                     //color: Colors.red,
                   ),
@@ -155,6 +188,18 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                 onTap: () {
                   setState(() {
                     _overlay = !_overlay;
+                    if (_overlay){
+                      doubleTapRHeight = videoHeight - 36;
+                      doubleTapLHeight = videoHeight - 10;
+                      doubleTapRMargin = 36;
+                      doubleTapLMargin = 10;
+                    }
+                    else if (!_overlay){
+                      doubleTapRHeight = videoHeight + 36;
+                      doubleTapLHeight = videoHeight;
+                      doubleTapRMargin = 0;
+                      doubleTapLMargin = 0;
+                    }
                   });
                 },
                 onDoubleTap:(){
@@ -164,9 +209,9 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                 }
             ), GestureDetector(
                 child: Container(
-                  width: MediaQuery.of(context).size.width / 2 - 45,
-                  height: MediaQuery.of(context).size.width * 16 / 9 - 36,
-                  margin: EdgeInsets.fromLTRB(MediaQuery.of(context).size.width / 2 + 45, 0, 0, 80),
+                  width: doubleTapRWidth / 2 - 45,
+                  height: doubleTapRHeight - 80,
+                  margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45, 0, 0, doubleTapLMargin + 20),
                   decoration: BoxDecoration(
                     //color: Colors.red,
                   ),
@@ -174,6 +219,18 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                 onTap: () {
                   setState(() {
                     _overlay = !_overlay;
+                    if (_overlay){
+                      doubleTapRHeight = videoHeight - 36;
+                      doubleTapLHeight = videoHeight - 10;
+                      doubleTapRMargin = 36;
+                      doubleTapLMargin = 10;
+                    }
+                    else if (!_overlay){
+                      doubleTapRHeight = videoHeight + 36;
+                      doubleTapLHeight = videoHeight;
+                      doubleTapRMargin = 0;
+                      doubleTapLMargin = 0;
+                    }
                   });
                 },
                 onDoubleTap:(){
@@ -207,7 +264,8 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               }))));
 
           return Container(
-            child: Wrap(
+            height: videoHeight,
+            child: ListView(
               children: children,
             ),
           );

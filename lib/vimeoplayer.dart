@@ -99,20 +99,17 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                   double delta = MediaQuery.of(context).size.width -
                       MediaQuery.of(context).size.height *
                           _controller.value.aspectRatio;
-                  if (MediaQuery.of(context).orientation == Orientation.portrait || delta < 0) {
-                    videoHeight = MediaQuery.of(context).size.width / _controller.value.aspectRatio;
-                    videoWidth = MediaQuery.of(context).size.width;
-                    videoMargin = 0;
-                  } else {
-                    videoHeight = MediaQuery.of(context).size.height - 36;
-                    videoWidth = videoHeight * _controller.value.aspectRatio;
-                    videoMargin = (MediaQuery.of(context).size.width - videoWidth) / 2;
-                  }
+
+                  videoHeight = MediaQuery.of(context).size.width / _controller.value.aspectRatio;
+                  videoWidth = MediaQuery.of(context).size.width;
+                  videoMargin = 0;
 
                   doubleTapRWidth = videoWidth;
-                  doubleTapRHeight = videoHeight - 36;
+                  doubleTapRHeight = videoHeight - 60;
                   doubleTapLWidth = videoWidth;
                   doubleTapLHeight = videoHeight;
+                  doubleTapLMargin = videoMargin;
+                  doubleTapRMargin = videoMargin;
 
                   if (_seek && _controller.value.duration.inSeconds > 2) {
                     _controller.seekTo(Duration(seconds: position));

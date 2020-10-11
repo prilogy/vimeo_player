@@ -1,6 +1,6 @@
 # vimeoplayer
 
-A new Flutter package for playing videos from Vimeo link. 
+A new Flutter package for playing any videos from Vimeo by id. 
 
 Functions:
 * Download video from link

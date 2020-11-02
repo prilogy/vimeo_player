@@ -40,7 +40,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   QualityLinks _quality; // Quality Class
   Map _qualityValues;
-  var  _qualityValue;
+  var _qualityValue;
   bool _seek = false;
 
   double videoHeight;
@@ -69,16 +69,12 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
       //Обновление состояние приложения и перерисовка
       setState(() {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitDown,
-          DeviceOrientation.portraitUp
-        ]);
+        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
       });
     });
 
     //На странице видео преимущество за портретной ориентацией
-    SystemChrome.setPreferredOrientations(
-        [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
 
     super.initState();
@@ -96,9 +92,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
                   //Управление шириной и высотой видео
-                  double delta = MediaQuery.of(context).size.width -
-                      MediaQuery.of(context).size.height *
-                          _controller.value.aspectRatio;
+                  double delta = MediaQuery.of(context).size.width - MediaQuery.of(context).size.height * _controller.value.aspectRatio;
 
                   videoHeight = MediaQuery.of(context).size.width / _controller.value.aspectRatio;
                   videoWidth = MediaQuery.of(context).size.width;
@@ -133,21 +127,19 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       heightFactor: 6,
                       child: CircularProgressIndicator(
                         strokeWidth: 4,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFF22A3D2)),
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF22A3D2)),
                       ));
                 }
               }),
           onTap: () {
             setState(() {
               _overlay = !_overlay;
-              if (_overlay){
+              if (_overlay) {
                 doubleTapRHeight = videoHeight - 36;
                 doubleTapLHeight = videoHeight - 10;
                 doubleTapRMargin = 36;
                 doubleTapLMargin = 10;
-              }
-              else if (!_overlay){
+              } else if (!_overlay) {
                 doubleTapRHeight = videoHeight + 36;
                 doubleTapLHeight = videoHeight + 16;
                 doubleTapRMargin = 0;
@@ -156,27 +148,27 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             });
           },
         ),
-        GestureDetector( //======= Перемотка назад =======//
+        GestureDetector(
+            //======= Перемотка назад =======//
             child: Container(
               width: doubleTapLWidth / 2 - 30,
               height: doubleTapLHeight - 46,
               margin: EdgeInsets.fromLTRB(0, 10, doubleTapLWidth / 2 + 30, doubleTapLMargin + 20),
               decoration: BoxDecoration(
-                //color: Colors.red,
-              ),
+                  //color: Colors.red,
+                  ),
             ),
             // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
             // "Во весь экран" и "Качество" при включенном overlay
             onTap: () {
               setState(() {
                 _overlay = !_overlay;
-                if (_overlay){
+                if (_overlay) {
                   doubleTapRHeight = videoHeight - 36;
                   doubleTapLHeight = videoHeight - 10;
                   doubleTapRMargin = 36;
                   doubleTapLMargin = 10;
-                }
-                else if (!_overlay){
+                } else if (!_overlay) {
                   doubleTapRHeight = videoHeight + 36;
                   doubleTapLHeight = videoHeight + 16;
                   doubleTapRMargin = 0;
@@ -184,30 +176,30 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                 }
               });
             },
-            onDoubleTap:(){
+            onDoubleTap: () {
               setState(() {
                 _controller.seekTo(Duration(seconds: _controller.value.position.inSeconds - 10));
               });
-            }
-        ), GestureDetector(
-            child: Container(//======= Перемотка вперед =======//
+            }),
+        GestureDetector(
+            child: Container(
+              //======= Перемотка вперед =======//
               width: doubleTapRWidth / 2 - 45,
               height: doubleTapRHeight - 60,
-              margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45, doubleTapRMargin, 0, doubleTapRMargin+20),
+              margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45, doubleTapRMargin, 0, doubleTapRMargin + 20),
               decoration: BoxDecoration(
-                //color: Colors.red,
-              ),
+                  //color: Colors.red,
+                  ),
             ),
             onTap: () {
               setState(() {
                 _overlay = !_overlay;
-                if (_overlay){
+                if (_overlay) {
                   doubleTapRHeight = videoHeight - 36;
                   doubleTapLHeight = videoHeight - 10;
                   doubleTapRMargin = 36;
                   doubleTapLMargin = 10;
-                }
-                else if (!_overlay){
+                } else if (!_overlay) {
                   doubleTapRHeight = videoHeight + 36;
                   doubleTapLHeight = videoHeight + 16;
                   doubleTapRMargin = 0;
@@ -215,12 +207,11 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                 }
               });
             },
-            onDoubleTap:(){
+            onDoubleTap: () {
               setState(() {
                 _controller.seekTo(Duration(seconds: _controller.value.position.inSeconds + 10));
               });
-            }
-        ),
+            }),
       ],
     ));
   }
@@ -247,6 +238,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                   }))));
 
           return Container(
+            color: Theme.of(context).backgroundColor,
             child: Wrap(
               children: children,
             ),
@@ -268,10 +260,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       gradient: LinearGradient(
                         begin: Alignment.centerRight,
                         end: Alignment.centerLeft,
-                        colors: [
-                          const Color(0x662F2C47),
-                          const Color(0x662F2C47)
-                        ],
+                        colors: [const Color(0x662F2C47), const Color(0x662F2C47)],
                       ),
                     ),
                   ),
@@ -279,23 +268,16 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               ),
               Center(
                 child: IconButton(
-                    padding: EdgeInsets.only(
-                        top: videoHeight / 2 - 30,
-                        bottom: videoHeight / 2 - 30),
-                    icon: _controller.value.isPlaying
-                        ? Icon(Icons.pause, size: 60.0)
-                        : Icon(Icons.play_arrow, size: 60.0),
+                    padding: EdgeInsets.only(top: videoHeight / 2 - 30, bottom: videoHeight / 2 - 30),
+                    icon: _controller.value.isPlaying ? Icon(Icons.pause, size: 60.0) : Icon(Icons.play_arrow, size: 60.0),
                     onPressed: () {
                       setState(() {
-                        _controller.value.isPlaying
-                            ? _controller.pause()
-                            : _controller.play();
+                        _controller.value.isPlaying ? _controller.pause() : _controller.play();
                       });
                     }),
               ),
               Container(
-                margin: EdgeInsets.only(
-                    top: videoHeight - 70, left: videoWidth + videoMargin - 50),
+                margin: EdgeInsets.only(top: videoHeight - 70, left: videoWidth + videoMargin - 50),
                 child: IconButton(
                     alignment: AlignmentDirectional.center,
                     icon: Icon(Icons.fullscreen, size: 30.0),
@@ -303,19 +285,24 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       setState(() {
                         _controller.pause();
                       });
-                      position = await Navigator.push(context, PageRouteBuilder(
-                          opaque: false,
-                          pageBuilder: (BuildContext context, _, __) => FullscreenPlayer(
-                            id: _id, autoPlay: true, controller: _controller, position: _controller.value.position.inSeconds,
-                              initFuture: initFuture, qualityValue: _qualityValue),
-                          transitionsBuilder: (___, Animation<double> animation, ____, Widget child) {
-                            print(animation);
-                            return FadeTransition(
-                              opacity: animation,
-                              child: ScaleTransition(scale: animation, child: child),
-                            );
-                          }
-                      ));
+                      position = await Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                              opaque: false,
+                              pageBuilder: (BuildContext context, _, __) => FullscreenPlayer(
+                                  id: _id,
+                                  autoPlay: true,
+                                  controller: _controller,
+                                  position: _controller.value.position.inSeconds,
+                                  initFuture: initFuture,
+                                  qualityValue: _qualityValue),
+                              transitionsBuilder: (___, Animation<double> animation, ____, Widget child) {
+                                print(animation);
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: ScaleTransition(scale: animation, child: child),
+                                );
+                              }));
                       setState(() {
                         _controller.play();
                         _seek = true;
@@ -335,8 +322,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               ),
               Container(
                 //===== Ползунок =====//
-                margin: EdgeInsets.only(
-                    top: videoHeight - 26, left: videoMargin), //CHECK IT
+                margin: EdgeInsets.only(top: videoHeight - 26, left: videoMargin), //CHECK IT
                 child: _videoOverlaySlider(),
               )
             ],
@@ -371,10 +357,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.position.inMinutes.toString() +
-                    ':' +
-                    (value.position.inSeconds - value.position.inMinutes * 60)
-                        .toString()),
+                child: Text(value.position.inMinutes.toString() + ':' + (value.position.inSeconds - value.position.inMinutes * 60).toString()),
               ),
               Container(
                 height: 20,
@@ -393,10 +376,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.duration.inMinutes.toString() +
-                    ':' +
-                    (value.duration.inSeconds - value.duration.inMinutes * 60)
-                        .toString()),
+                child: Text(value.duration.inMinutes.toString() + ':' + (value.duration.inSeconds - value.duration.inMinutes * 60).toString()),
               ),
             ],
           );

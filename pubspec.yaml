@@ -1,6 +1,6 @@
 name: vimeoplayer
 description: A new Flutter package for playing any videos from Vimeo by id.
-version: 0.1.5
+version: 0.1.8
 homepage: https://github.com/prilogy/vimeo_player
 
 environment:

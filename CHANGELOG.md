@@ -1,3 +1,20 @@
+## [0.1.8] - Fixed bugs
+
+### Fixed
+* Improved visuals;
+* Optimizing performance.
+
+
+## [0.1.7] - Debug elements removed
+
+
+## [0.1.6] - Fixed bugs
+
+### Fixed
+* Indentation error;
+* Bug when manually exiting fullscreen mode.
+
+
 ## [0.1.5] - Fixed bugs
 
 ### Fixed

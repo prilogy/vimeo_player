@@ -7,11 +7,12 @@ import 'src/quality_links.dart';
 import 'dart:async';
 import 'src/fullscreen_player.dart';
 
+//Класс видео плеера
 class VimeoPlayer extends StatefulWidget {
   final String id;
   final bool autoPlay;
   final bool looping;
-  int position;
+  final int position;
 
   VimeoPlayer({
     @required this.id,
@@ -22,7 +23,8 @@ class VimeoPlayer extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _VimeoPlayerState createState() => _VimeoPlayerState(id, autoPlay, looping, position);
+  _VimeoPlayerState createState() =>
+      _VimeoPlayerState(id, autoPlay, looping, position);
 }
 
 class _VimeoPlayerState extends State<VimeoPlayer> {
@@ -35,14 +37,19 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position);
 
-  VideoPlayerController _controller; //Custom controller
+  //Custom controller
+  VideoPlayerController _controller;
   Future<void> initFuture;
 
-  QualityLinks _quality; // Quality Class
+  //Quality Class
+  QualityLinks _quality;
   Map _qualityValues;
-  var  _qualityValue;
+  var _qualityValue;
+
+  //Переменная перемотки
   bool _seek = false;
 
+  //Переменные видео
   double videoHeight;
   double videoWidth;
   double videoMargin;
@@ -57,7 +64,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   @override
   void initState() {
-    _quality = QualityLinks(_id); //Create class
+    //Create class
+    _quality = QualityLinks(_id);
+
     //Инициализация контроллеров видео при получении данных из Vimeo
     _quality.getQualitiesSync().then((value) {
       _qualityValues = value;
@@ -69,10 +78,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
       //Обновление состояние приложения и перерисовка
       setState(() {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitDown,
-          DeviceOrientation.portraitUp
-        ]);
+        SystemChrome.setPreferredOrientations(
+            [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
       });
     });
 
@@ -84,6 +91,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
     super.initState();
   }
 
+  //Отрисовываем элементы плеера
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -100,17 +108,23 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       MediaQuery.of(context).size.height *
                           _controller.value.aspectRatio;
 
-                  videoHeight = MediaQuery.of(context).size.width / _controller.value.aspectRatio;
-                  videoWidth = MediaQuery.of(context).size.width;
-                  videoMargin = 0;
+                  //Рассчет ширины и высоты видео плеера относительно сторон
+                  // и ориентации устройства
+                  if (MediaQuery.of(context).orientation ==
+                          Orientation.portrait ||
+                      delta < 0) {
+                    videoHeight = MediaQuery.of(context).size.width /
+                        _controller.value.aspectRatio;
+                    videoWidth = MediaQuery.of(context).size.width;
+                    videoMargin = 0;
+                  } else {
+                    videoHeight = MediaQuery.of(context).size.height;
+                    videoWidth = videoHeight * _controller.value.aspectRatio;
+                    videoMargin =
+                        (MediaQuery.of(context).size.width - videoWidth) / 2;
+                  }
 
-                  doubleTapRWidth = videoWidth;
-                  doubleTapRHeight = videoHeight - 60;
-                  doubleTapLWidth = videoWidth;
-                  doubleTapLHeight = videoHeight;
-                  doubleTapLMargin = videoMargin;
-                  doubleTapRMargin = videoMargin;
-
+                  //Начинаем с того же места, где и остановились при смене качества
                   if (_seek && _controller.value.duration.inSeconds > 2) {
                     _controller.seekTo(Duration(seconds: position));
                     _seek = false;
@@ -139,15 +153,16 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                 }
               }),
           onTap: () {
+            //Редактируем размер области дабл тапа при показе оверлея.
+            // Сделано для открытия кнопок "Во весь экран" и "Качество"
             setState(() {
               _overlay = !_overlay;
-              if (_overlay){
+              if (_overlay) {
                 doubleTapRHeight = videoHeight - 36;
                 doubleTapLHeight = videoHeight - 10;
                 doubleTapRMargin = 36;
                 doubleTapLMargin = 10;
-              }
-              else if (!_overlay){
+              } else if (!_overlay) {
                 doubleTapRHeight = videoHeight + 36;
                 doubleTapLHeight = videoHeight + 16;
                 doubleTapRMargin = 0;
@@ -156,11 +171,49 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             });
           },
         ),
-        GestureDetector( //======= Перемотка назад =======//
+        GestureDetector(
+            //======= Перемотка назад =======//
             child: Container(
               width: doubleTapLWidth / 2 - 30,
               height: doubleTapLHeight - 46,
-              margin: EdgeInsets.fromLTRB(0, 10, doubleTapLWidth / 2 + 30, doubleTapLMargin + 20),
+              margin: EdgeInsets.fromLTRB(
+                  0, 10, doubleTapLWidth / 2 + 30, doubleTapLMargin + 20),
+              decoration: BoxDecoration(
+                //color: Colors.red,
+              ),
+            ),
+
+            // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
+            // "Во весь экран" и "Качество" при включенном overlay
+            onTap: () {
+              setState(() {
+                _overlay = !_overlay;
+                if (_overlay) {
+                  doubleTapRHeight = videoHeight - 36;
+                  doubleTapLHeight = videoHeight - 10;
+                  doubleTapRMargin = 36;
+                  doubleTapLMargin = 10;
+                } else if (!_overlay) {
+                  doubleTapRHeight = videoHeight + 36;
+                  doubleTapLHeight = videoHeight + 16;
+                  doubleTapRMargin = 0;
+                  doubleTapLMargin = 0;
+                }
+              });
+            },
+            onDoubleTap: () {
+              setState(() {
+                _controller.seekTo(Duration(
+                    seconds: _controller.value.position.inSeconds - 10));
+              });
+            }),
+        GestureDetector(
+            child: Container(
+              //======= Перемотка вперед =======//
+              width: doubleTapRWidth / 2 - 45,
+              height: doubleTapRHeight - 60,
+              margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45,
+                  doubleTapRMargin, 0, doubleTapRMargin + 20),
               decoration: BoxDecoration(
                 //color: Colors.red,
               ),
@@ -170,13 +223,12 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             onTap: () {
               setState(() {
                 _overlay = !_overlay;
-                if (_overlay){
+                if (_overlay) {
                   doubleTapRHeight = videoHeight - 36;
                   doubleTapLHeight = videoHeight - 10;
                   doubleTapRMargin = 36;
                   doubleTapLMargin = 10;
-                }
-                else if (!_overlay){
+                } else if (!_overlay) {
                   doubleTapRHeight = videoHeight + 36;
                   doubleTapLHeight = videoHeight + 16;
                   doubleTapRMargin = 0;
@@ -184,43 +236,12 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                 }
               });
             },
-            onDoubleTap:(){
+            onDoubleTap: () {
               setState(() {
-                _controller.seekTo(Duration(seconds: _controller.value.position.inSeconds - 10));
+                _controller.seekTo(Duration(
+                    seconds: _controller.value.position.inSeconds + 10));
               });
-            }
-        ), GestureDetector(
-            child: Container(//======= Перемотка вперед =======//
-              width: doubleTapRWidth / 2 - 45,
-              height: doubleTapRHeight - 60,
-              margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45, doubleTapRMargin, 0, doubleTapRMargin+20),
-              decoration: BoxDecoration(
-                //color: Colors.red,
-              ),
-            ),
-            onTap: () {
-              setState(() {
-                _overlay = !_overlay;
-                if (_overlay){
-                  doubleTapRHeight = videoHeight - 36;
-                  doubleTapLHeight = videoHeight - 10;
-                  doubleTapRMargin = 36;
-                  doubleTapLMargin = 10;
-                }
-                else if (!_overlay){
-                  doubleTapRHeight = videoHeight + 36;
-                  doubleTapLHeight = videoHeight + 16;
-                  doubleTapRMargin = 0;
-                  doubleTapLMargin = 0;
-                }
-              });
-            },
-            onDoubleTap:(){
-              setState(() {
-                _controller.seekTo(Duration(seconds: _controller.value.position.inSeconds + 10));
-              });
-            }
-        ),
+            }),
       ],
     ));
   }
@@ -230,6 +251,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {
+          //Формирования списка качества
           final children = <Widget>[];
           _qualityValues.forEach((elem, value) => (children.add(new ListTile(
               title: new Text(" ${elem.toString()} fps"),
@@ -238,14 +260,15 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                     setState(() {
                       _controller.pause();
                       _qualityValue = value;
-                      _controller = VideoPlayerController.network(_qualityValue);
+                      _controller =
+                          VideoPlayerController.network(_qualityValue);
                       _controller.setLooping(true);
                       _seek = true;
                       initFuture = _controller.initialize();
                       _controller.play();
                     }),
                   }))));
-
+          //Вывод элементов качество списком
           return Container(
             child: Wrap(
               children: children,
@@ -303,19 +326,33 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       setState(() {
                         _controller.pause();
                       });
-                      position = await Navigator.push(context, PageRouteBuilder(
-                          opaque: false,
-                          pageBuilder: (BuildContext context, _, __) => FullscreenPlayer(
-                            id: _id, autoPlay: true, controller: _controller, position: _controller.value.position.inSeconds,
-                              initFuture: initFuture, qualityValue: _qualityValue),
-                          transitionsBuilder: (___, Animation<double> animation, ____, Widget child) {
-                            print(animation);
-                            return FadeTransition(
-                              opacity: animation,
-                              child: ScaleTransition(scale: animation, child: child),
-                            );
-                          }
-                      ));
+                      //Создание новой страницы с плеером во весь экран,
+                      // предача данных в плеер и возвращение позиции при
+                      // возвращении обратно. Пока что мы не вернулись из
+                      // фуллскрина - программа в ожидании
+                      position = await Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                              opaque: false,
+                              pageBuilder: (BuildContext context, _, __) =>
+                                  FullscreenPlayer(
+                                      id: _id,
+                                      autoPlay: true,
+                                      controller: _controller,
+                                      position:
+                                          _controller.value.position.inSeconds,
+                                      initFuture: initFuture,
+                                      qualityValue: _qualityValue),
+                              transitionsBuilder: (___,
+                                  Animation<double> animation,
+                                  ____,
+                                  Widget child) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: ScaleTransition(
+                                      scale: animation, child: child),
+                                );
+                              }));
                       setState(() {
                         _controller.play();
                         _seek = true;

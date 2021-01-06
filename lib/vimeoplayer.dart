@@ -13,18 +13,22 @@ class VimeoPlayer extends StatefulWidget {
   final bool autoPlay;
   final bool looping;
   final int position;
+  final bool commencingOverlay;
+  final Color fullScreenBackgroundColor;
 
   VimeoPlayer({
     @required this.id,
     this.autoPlay,
     this.looping,
     this.position,
+    this.commencingOverlay,
+    this.fullScreenBackgroundColor,
     Key key,
   }) : super(key: key);
 
   @override
   _VimeoPlayerState createState() =>
-      _VimeoPlayerState(id, autoPlay, looping, position);
+      _VimeoPlayerState(id, autoPlay, looping, position, commencingOverlay);
 }
 
 class _VimeoPlayerState extends State<VimeoPlayer> {
@@ -35,7 +39,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   bool fullScreen = false;
   int position;
 
-  _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position);
+  _VimeoPlayerState(
+      this._id, this.autoPlay, this.looping, this.position, this._overlay);
 
   //Custom controller
   VideoPlayerController _controller;
@@ -95,155 +100,156 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: Stack(
-      alignment: AlignmentDirectional.center,
-      children: <Widget>[
-        GestureDetector(
-          child: FutureBuilder(
-              future: initFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  //Управление шириной и высотой видео
-                  double delta = MediaQuery.of(context).size.width -
-                      MediaQuery.of(context).size.height *
+      child: Stack(
+        alignment: AlignmentDirectional.center,
+        children: <Widget>[
+          GestureDetector(
+            child: FutureBuilder(
+                future: initFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    //Управление шириной и высотой видео
+                    double delta = MediaQuery.of(context).size.width -
+                        MediaQuery.of(context).size.height *
+                            _controller.value.aspectRatio;
+
+                    //Рассчет ширины и высоты видео плеера относительно сторон
+                    // и ориентации устройства
+                    if (MediaQuery.of(context).orientation ==
+                            Orientation.portrait ||
+                        delta < 0) {
+                      videoHeight = MediaQuery.of(context).size.width /
                           _controller.value.aspectRatio;
+                      videoWidth = MediaQuery.of(context).size.width;
+                      videoMargin = 0;
+                    } else {
+                      videoHeight = MediaQuery.of(context).size.height;
+                      videoWidth = videoHeight * _controller.value.aspectRatio;
+                      videoMargin =
+                          (MediaQuery.of(context).size.width - videoWidth) / 2;
+                    }
 
-                  //Рассчет ширины и высоты видео плеера относительно сторон
-                  // и ориентации устройства
-                  if (MediaQuery.of(context).orientation ==
-                          Orientation.portrait ||
-                      delta < 0) {
-                    videoHeight = MediaQuery.of(context).size.width /
-                        _controller.value.aspectRatio;
-                    videoWidth = MediaQuery.of(context).size.width;
-                    videoMargin = 0;
+                    //Начинаем с того же места, где и остановились при смене качества
+                    if (_seek && _controller.value.duration.inSeconds > 2) {
+                      _controller.seekTo(Duration(seconds: position));
+                      _seek = false;
+                    }
+
+                    //Отрисовка элементов плеера
+                    return Stack(
+                      children: <Widget>[
+                        Container(
+                          height: videoHeight,
+                          width: videoWidth,
+                          margin: EdgeInsets.only(left: videoMargin),
+                          child: VideoPlayer(_controller),
+                        ),
+                        _videoOverlay(),
+                      ],
+                    );
                   } else {
-                    videoHeight = MediaQuery.of(context).size.height;
-                    videoWidth = videoHeight * _controller.value.aspectRatio;
-                    videoMargin =
-                        (MediaQuery.of(context).size.width - videoWidth) / 2;
+                    return Center(
+                        heightFactor: 6,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 4,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFF22A3D2)),
+                        ));
                   }
-
-                  //Начинаем с того же места, где и остановились при смене качества
-                  if (_seek && _controller.value.duration.inSeconds > 2) {
-                    _controller.seekTo(Duration(seconds: position));
-                    _seek = false;
-                  }
-
-                  //Отрисовка элементов плеера
-                  return Stack(
-                    children: <Widget>[
-                      Container(
-                        height: videoHeight,
-                        width: videoWidth,
-                        margin: EdgeInsets.only(left: videoMargin),
-                        child: VideoPlayer(_controller),
-                      ),
-                      _videoOverlay(),
-                    ],
-                  );
-                } else {
-                  return Center(
-                      heightFactor: 6,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 4,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFF22A3D2)),
-                      ));
+                }),
+            onTap: () {
+              //Редактируем размер области дабл тапа при показе оверлея.
+              // Сделано для открытия кнопок "Во весь экран" и "Качество"
+              setState(() {
+                _overlay = !_overlay;
+                if (_overlay) {
+                  doubleTapRHeight = videoHeight - 36;
+                  doubleTapLHeight = videoHeight - 10;
+                  doubleTapRMargin = 36;
+                  doubleTapLMargin = 10;
+                } else if (!_overlay) {
+                  doubleTapRHeight = videoHeight + 36;
+                  doubleTapLHeight = videoHeight + 16;
+                  doubleTapRMargin = 0;
+                  doubleTapLMargin = 0;
                 }
+              });
+            },
+          ),
+          GestureDetector(
+              //======= Перемотка назад =======//
+              child: Container(
+                width: doubleTapLWidth / 2 - 30,
+                height: doubleTapLHeight - 46,
+                margin: EdgeInsets.fromLTRB(
+                    0, 10, doubleTapLWidth / 2 + 30, doubleTapLMargin + 20),
+                decoration: BoxDecoration(
+                    //color: Colors.red,
+                    ),
+              ),
+
+              // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
+              // "Во весь экран" и "Качество" при включенном overlay
+              onTap: () {
+                setState(() {
+                  _overlay = !_overlay;
+                  if (_overlay) {
+                    doubleTapRHeight = videoHeight - 36;
+                    doubleTapLHeight = videoHeight - 10;
+                    doubleTapRMargin = 36;
+                    doubleTapLMargin = 10;
+                  } else if (!_overlay) {
+                    doubleTapRHeight = videoHeight + 36;
+                    doubleTapLHeight = videoHeight + 16;
+                    doubleTapRMargin = 0;
+                    doubleTapLMargin = 0;
+                  }
+                });
+              },
+              onDoubleTap: () {
+                setState(() {
+                  _controller.seekTo(Duration(
+                      seconds: _controller.value.position.inSeconds - 10));
+                });
               }),
-          onTap: () {
-            //Редактируем размер области дабл тапа при показе оверлея.
-            // Сделано для открытия кнопок "Во весь экран" и "Качество"
-            setState(() {
-              _overlay = !_overlay;
-              if (_overlay) {
-                doubleTapRHeight = videoHeight - 36;
-                doubleTapLHeight = videoHeight - 10;
-                doubleTapRMargin = 36;
-                doubleTapLMargin = 10;
-              } else if (!_overlay) {
-                doubleTapRHeight = videoHeight + 36;
-                doubleTapLHeight = videoHeight + 16;
-                doubleTapRMargin = 0;
-                doubleTapLMargin = 0;
-              }
-            });
-          },
-        ),
-        GestureDetector(
-            //======= Перемотка назад =======//
-            child: Container(
-              width: doubleTapLWidth / 2 - 30,
-              height: doubleTapLHeight - 46,
-              margin: EdgeInsets.fromLTRB(
-                  0, 10, doubleTapLWidth / 2 + 30, doubleTapLMargin + 20),
-              decoration: BoxDecoration(
-                //color: Colors.red,
+          GestureDetector(
+              child: Container(
+                //======= Перемотка вперед =======//
+                width: doubleTapRWidth / 2 - 45,
+                height: doubleTapRHeight - 60,
+                margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45,
+                    doubleTapRMargin, 0, doubleTapRMargin + 20),
+                decoration: BoxDecoration(
+                    //color: Colors.red,
+                    ),
               ),
-            ),
-
-            // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
-            // "Во весь экран" и "Качество" при включенном overlay
-            onTap: () {
-              setState(() {
-                _overlay = !_overlay;
-                if (_overlay) {
-                  doubleTapRHeight = videoHeight - 36;
-                  doubleTapLHeight = videoHeight - 10;
-                  doubleTapRMargin = 36;
-                  doubleTapLMargin = 10;
-                } else if (!_overlay) {
-                  doubleTapRHeight = videoHeight + 36;
-                  doubleTapLHeight = videoHeight + 16;
-                  doubleTapRMargin = 0;
-                  doubleTapLMargin = 0;
-                }
-              });
-            },
-            onDoubleTap: () {
-              setState(() {
-                _controller.seekTo(Duration(
-                    seconds: _controller.value.position.inSeconds - 10));
-              });
-            }),
-        GestureDetector(
-            child: Container(
-              //======= Перемотка вперед =======//
-              width: doubleTapRWidth / 2 - 45,
-              height: doubleTapRHeight - 60,
-              margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45,
-                  doubleTapRMargin, 0, doubleTapRMargin + 20),
-              decoration: BoxDecoration(
-                //color: Colors.red,
-              ),
-            ),
-            // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
-            // "Во весь экран" и "Качество" при включенном overlay
-            onTap: () {
-              setState(() {
-                _overlay = !_overlay;
-                if (_overlay) {
-                  doubleTapRHeight = videoHeight - 36;
-                  doubleTapLHeight = videoHeight - 10;
-                  doubleTapRMargin = 36;
-                  doubleTapLMargin = 10;
-                } else if (!_overlay) {
-                  doubleTapRHeight = videoHeight + 36;
-                  doubleTapLHeight = videoHeight + 16;
-                  doubleTapRMargin = 0;
-                  doubleTapLMargin = 0;
-                }
-              });
-            },
-            onDoubleTap: () {
-              setState(() {
-                _controller.seekTo(Duration(
-                    seconds: _controller.value.position.inSeconds + 10));
-              });
-            }),
-      ],
-    ));
+              // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
+              // "Во весь экран" и "Качество" при включенном overlay
+              onTap: () {
+                setState(() {
+                  _overlay = !_overlay;
+                  if (_overlay) {
+                    doubleTapRHeight = videoHeight - 36;
+                    doubleTapLHeight = videoHeight - 10;
+                    doubleTapRMargin = 36;
+                    doubleTapLMargin = 10;
+                  } else if (!_overlay) {
+                    doubleTapRHeight = videoHeight + 36;
+                    doubleTapLHeight = videoHeight + 16;
+                    doubleTapRMargin = 0;
+                    doubleTapLMargin = 0;
+                  }
+                });
+              },
+              onDoubleTap: () {
+                setState(() {
+                  _controller.seekTo(Duration(
+                      seconds: _controller.value.position.inSeconds + 10));
+                });
+              }),
+        ],
+      ),
+    );
   }
 
   //================================ Quality ================================//
@@ -336,13 +342,16 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                               opaque: false,
                               pageBuilder: (BuildContext context, _, __) =>
                                   FullscreenPlayer(
-                                      id: _id,
-                                      autoPlay: true,
-                                      controller: _controller,
-                                      position:
-                                          _controller.value.position.inSeconds,
-                                      initFuture: initFuture,
-                                      qualityValue: _qualityValue),
+                                    id: _id,
+                                    autoPlay: true,
+                                    controller: _controller,
+                                    position:
+                                        _controller.value.position.inSeconds,
+                                    initFuture: initFuture,
+                                    qualityValue: _qualityValue,
+                                    backgroundColor:
+                                        widget.fullScreenBackgroundColor,
+                                  ),
                               transitionsBuilder: (___,
                                   Animation<double> animation,
                                   ____,

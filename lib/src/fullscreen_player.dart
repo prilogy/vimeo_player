@@ -38,7 +38,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   String _id;
   bool autoPlay = false;
   bool looping = false;
-  bool _overlay = true;
+  bool _overlay = false;
   bool fullScreen = true;
 
   VideoPlayerController controller;

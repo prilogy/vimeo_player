@@ -27,8 +27,8 @@ class VimeoPlayer extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _VimeoPlayerState createState() =>
-      _VimeoPlayerState(id, autoPlay, looping, position, commencingOverlay);
+  _VimeoPlayerState createState() => _VimeoPlayerState(
+      id, autoPlay, looping, position, autoPlay ? commencingOverlay : true);
 }
 
 class _VimeoPlayerState extends State<VimeoPlayer> {

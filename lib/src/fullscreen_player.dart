@@ -21,8 +21,11 @@ class FullscreenPlayer extends StatefulWidget {
   ///minimum 3 seconds of timeout is stacked
   final int overlayTimeOut;
 
+  final Color loadingIndicatorColor;
+
   FullscreenPlayer({
     @required this.id,
+    @required this.overlayTimeOut,
     this.autoPlay = false,
     this.looping,
     this.controller,
@@ -30,7 +33,7 @@ class FullscreenPlayer extends StatefulWidget {
     this.initFuture,
     this.qualityValue,
     this.backgroundColor,
-    @required this.overlayTimeOut,
+    this.loadingIndicatorColor,
     Key key,
   }) : super(key: key);
 
@@ -235,8 +238,10 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                               heightFactor: 6,
                               child: CircularProgressIndicator(
                                 strokeWidth: 4,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF22A3D2)),
+                                valueColor: widget.loadingIndicatorColor != null
+                                    ? AlwaysStoppedAnimation<Color>(
+                                        widget.loadingIndicatorColor)
+                                    : null,
                               ));
                         }
                       }),

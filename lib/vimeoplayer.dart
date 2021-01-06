@@ -356,7 +356,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                               pageBuilder: (BuildContext context, _, __) =>
                                   FullscreenPlayer(
                                     id: _id,
-                                    autoPlay: true,
+                                    autoPlay: _controller.value.isPlaying
+                                        ? true
+                                        : false,
                                     controller: _controller,
                                     position:
                                         _controller.value.position.inSeconds,

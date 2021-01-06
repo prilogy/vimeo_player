@@ -417,10 +417,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.position.inMinutes.toString() +
-                    ':' +
-                    (value.position.inSeconds - value.position.inMinutes * 60)
-                        .toString()),
+                child: Text(
+                  '${_twoDigits(value.position.inMinutes)}:${_twoDigits(value.position.inSeconds - value.position.inMinutes * 60)}',
+                ),
               ),
               Container(
                 height: 20,
@@ -439,10 +438,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.duration.inMinutes.toString() +
-                    ':' +
-                    (value.duration.inSeconds - value.duration.inMinutes * 60)
-                        .toString()),
+                child: Text(
+                  '${_twoDigits(value.duration.inMinutes)}:${_twoDigits(value.duration.inSeconds - value.duration.inMinutes * 60)}',
+                ),
               ),
             ],
           );
@@ -452,6 +450,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
       },
     );
   }
+
+  ///Convert the integer number in atleast 2 digit format (i.e appending 0 in front if any)
+  String _twoDigits(int n) => n.toString().padLeft(2, '0');
 
   @override
   void dispose() {

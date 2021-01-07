@@ -25,6 +25,7 @@ class VimeoPlayer extends StatefulWidget {
   final int overlayTimeOut;
 
   final Color loadingIndicatorColor;
+  final Color controlsColor;
 
   VimeoPlayer({
     @required this.id,
@@ -34,6 +35,7 @@ class VimeoPlayer extends StatefulWidget {
     this.commencingOverlay = true,
     this.fullScreenBackgroundColor,
     this.loadingIndicatorColor,
+    this.controlsColor,
     int overlayTimeOut,
     Key key,
   })  : this.overlayTimeOut = max(overlayTimeOut, 5),
@@ -335,8 +337,10 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                         top: videoHeight / 2 - 30,
                         bottom: videoHeight / 2 - 30),
                     icon: _controller.value.isPlaying
-                        ? Icon(Icons.pause, size: 60.0)
-                        : Icon(Icons.play_arrow, size: 60.0),
+                        ? Icon(Icons.pause,
+                            size: 60.0, color: widget.controlsColor)
+                        : Icon(Icons.play_arrow,
+                            size: 60.0, color: widget.controlsColor),
                     onPressed: () {
                       setState(() {
                         //vanish the overlay if play button is pressed
@@ -355,7 +359,11 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                     top: videoHeight - 70, left: videoWidth + videoMargin - 50),
                 child: IconButton(
                     alignment: AlignmentDirectional.center,
-                    icon: Icon(Icons.fullscreen, size: 30.0),
+                    icon: Icon(
+                      Icons.fullscreen,
+                      size: 30.0,
+                      color: widget.controlsColor,
+                    ),
                     onPressed: () async {
                       setState(() {
                         _controller.pause();
@@ -403,7 +411,11 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 margin: EdgeInsets.only(left: videoWidth + videoMargin - 48),
                 child: IconButton(
-                    icon: Icon(Icons.settings, size: 26.0),
+                    icon: Icon(
+                      Icons.settings,
+                      size: 26.0,
+                      color: widget.controlsColor,
+                    ),
                     onPressed: () {
                       position = _controller.value.position.inSeconds;
                       _seek = true;
@@ -451,6 +463,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                 alignment: Alignment(0, 0),
                 child: Text(
                   '${_twoDigits(value.position.inMinutes)}:${_twoDigits(value.position.inSeconds - value.position.inMinutes * 60)}',
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
               Container(
@@ -472,6 +485,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                 alignment: Alignment(0, 0),
                 child: Text(
                   '${_twoDigits(value.duration.inMinutes)}:${_twoDigits(value.duration.inSeconds - value.duration.inMinutes * 60)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

@@ -22,6 +22,7 @@ class FullscreenPlayer extends StatefulWidget {
   final int overlayTimeOut;
 
   final Color loadingIndicatorColor;
+  final Color controlsColor;
 
   FullscreenPlayer({
     @required this.id,
@@ -34,6 +35,7 @@ class FullscreenPlayer extends StatefulWidget {
     this.qualityValue,
     this.backgroundColor,
     this.loadingIndicatorColor,
+    this.controlsColor,
     Key key,
   }) : super(key: key);
 
@@ -356,8 +358,16 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                       bottom: videoHeight / 2 - 30,
                     ),
                     icon: _controller.value.isPlaying
-                        ? Icon(Icons.pause, size: 60.0)
-                        : Icon(Icons.play_arrow, size: 60.0),
+                        ? Icon(
+                            Icons.pause,
+                            size: 60.0,
+                            color: widget.controlsColor,
+                          )
+                        : Icon(
+                            Icons.play_arrow,
+                            size: 60.0,
+                            color: widget.controlsColor,
+                          ),
                     onPressed: () {
                       setState(() {
                         //vanish the overlay if play button is pressed
@@ -376,7 +386,8 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                     top: videoHeight - 80, left: videoWidth + videoMargin - 50),
                 child: IconButton(
                     alignment: AlignmentDirectional.center,
-                    icon: Icon(Icons.fullscreen, size: 30.0),
+                    icon: Icon(Icons.fullscreen,
+                        size: 30.0, color: widget.controlsColor),
                     onPressed: () {
                       overlayTimer?.cancel();
                       setState(() {
@@ -395,7 +406,11 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               Container(
                 margin: EdgeInsets.only(left: videoWidth + videoMargin - 48),
                 child: IconButton(
-                    icon: Icon(Icons.settings, size: 26.0),
+                    icon: Icon(
+                      Icons.settings,
+                      size: 26.0,
+                      color: widget.controlsColor,
+                    ),
                     onPressed: () {
                       position = _controller.value.position.inSeconds;
                       _seek = true;
@@ -427,6 +442,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                 alignment: Alignment(0, 0),
                 child: Text(
                   '${_twoDigits(value.position.inMinutes)}:${_twoDigits(value.position.inSeconds - value.position.inMinutes * 60)}',
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
               Container(
@@ -448,6 +464,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                 alignment: Alignment(0, 0),
                 child: Text(
                   '${_twoDigits(value.duration.inMinutes)}:${_twoDigits(value.duration.inSeconds - value.duration.inMinutes * 60)}',
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
             ],

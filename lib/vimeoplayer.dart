@@ -21,7 +21,7 @@ class VimeoPlayer extends StatefulWidget {
   final Color fullScreenBackgroundColor;
 
   ///[overlayTimeOut] in seconds: decide after how much second overlay should vanishes
-  ///minimum 3 seconds of timeout is stacked
+  ///minimum 5 seconds of timeout is stacked
   final int overlayTimeOut;
 
   final Color loadingIndicatorColor;
@@ -36,7 +36,7 @@ class VimeoPlayer extends StatefulWidget {
     this.loadingIndicatorColor,
     int overlayTimeOut,
     Key key,
-  })  : this.overlayTimeOut = max(overlayTimeOut, 3),
+  })  : this.overlayTimeOut = max(overlayTimeOut, 5),
         super(key: key);
 
   @override
@@ -53,7 +53,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   int position;
 
   _VimeoPlayerState(
-      this._id, this.autoPlay, this.looping, this.position, this._overlay);
+      this._id, this.autoPlay, this.looping, this.position, this._overlay)
+      : initialOverlay = _overlay;
 
   //Custom controller
   VideoPlayerController _controller;
@@ -82,6 +83,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   //overlay timeout handler
   Timer overlayTimer;
+  //indicate if overlay to be display on commencing video or not
+  bool initialOverlay;
 
   @override
   void initState() {
@@ -184,7 +187,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                   }
 
                   //vanish overlayer if so.
-                  if (_overlay) {
+                  if (initialOverlay) {
                     overlayTimer =
                         Timer(Duration(seconds: widget.overlayTimeOut), () {
                       setState(() {
@@ -195,6 +198,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                         doubleTapLMargin = 0;
                       });
                     });
+                    initialOverlay = false;
                   }
 
                   // Rendering player elements
@@ -335,9 +339,14 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                         : Icon(Icons.play_arrow, size: 60.0),
                     onPressed: () {
                       setState(() {
-                        _controller.value.isPlaying
-                            ? _controller.pause()
-                            : _controller.play();
+                        //vanish the overlay if play button is pressed
+                        if (!_controller.value.isPlaying) {
+                          overlayTimer?.cancel();
+                          _controller.play();
+                          _overlay = !_overlay;
+                        } else {
+                          _controller.pause();
+                        }
                       });
                     }),
               ),
@@ -350,6 +359,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                     onPressed: () async {
                       setState(() {
                         _controller.pause();
+                        overlayTimer?.cancel();
                       });
                       // Create a new page with a full screen player,
                       // transfer data to the player and return the position when
@@ -478,6 +488,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   @override
   void dispose() {
+    overlayTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }

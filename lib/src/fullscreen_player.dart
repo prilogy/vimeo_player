@@ -82,6 +82,8 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
 
   //overlay timeout handler
   Timer overlayTimer;
+  //indicate if overlay to be display on commencing video or not
+  bool initialOverlay = true;
 
   @override
   void initState() {
@@ -107,6 +109,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   // Track the user's click back and translate
   // the screen with the player is not in fullscreen mode, return the orientation
   Future<bool> _onWillPop() {
+    overlayTimer?.cancel();
     setState(() {
       _controller.pause();
       SystemChrome.setPreferredOrientations(
@@ -208,7 +211,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                               [SystemUiOverlay.bottom]);
 
                           //vanish overlayer if so.
-                          if (_overlay) {
+                          if (initialOverlay) {
                             overlayTimer = Timer(
                                 Duration(seconds: widget.overlayTimeOut), () {
                               setState(() {
@@ -219,6 +222,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                                 doubleTapLMarginFS = 0;
                               });
                             });
+                            initialOverlay = false;
                           }
 
                           // Rendering player elements
@@ -356,9 +360,14 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                         : Icon(Icons.play_arrow, size: 60.0),
                     onPressed: () {
                       setState(() {
-                        _controller.value.isPlaying
-                            ? _controller.pause()
-                            : _controller.play();
+                        //vanish the overlay if play button is pressed
+                        if (!_controller.value.isPlaying) {
+                          overlayTimer?.cancel();
+                          _controller.play();
+                          _overlay = !_overlay;
+                        } else {
+                          _controller.pause();
+                        }
                       });
                     }),
               ),
@@ -369,6 +378,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                     alignment: AlignmentDirectional.center,
                     icon: Icon(Icons.fullscreen, size: 30.0),
                     onPressed: () {
+                      overlayTimer?.cancel();
                       setState(() {
                         _controller.pause();
                         SystemChrome.setPreferredOrientations([
@@ -451,4 +461,9 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
 
   ///Convert the integer number in atleast 2 digit format (i.e appending 0 in front if any)
   String _twoDigits(int n) => n.toString().padLeft(2, '0');
+
+  @override
+  void dispose() {
+    overlayTimer?.cancel();
+  }
 }

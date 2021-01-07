@@ -403,6 +403,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                                         backgroundColor:
                                             widget.fullScreenBackgroundColor,
                                         overlayTimeOut: widget.overlayTimeOut,
+                                        controlsColor: widget.controlsColor,
                                       ),
                                   transitionsBuilder: (___,
                                       Animation<double> animation,

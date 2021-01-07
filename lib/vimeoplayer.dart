@@ -9,6 +9,14 @@ import 'src/quality_links.dart';
 import 'dart:async';
 import 'src/fullscreen_player.dart';
 
+///holds the viedo controller details
+class ControllerDetails {
+  int position;
+  bool playingStatus;
+
+  ControllerDetails({this.position, this.playingStatus});
+}
+
 // Video player class
 class VimeoPlayer extends StatefulWidget {
   final String id;
@@ -365,6 +373,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       color: widget.controlsColor,
                     ),
                     onPressed: () async {
+                      final playing = _controller.value.isPlaying;
                       setState(() {
                         _controller.pause();
                         overlayTimer?.cancel();
@@ -373,39 +382,41 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       // transfer data to the player and return the position when
                       // return back. Until we returned from
                       // fullscreen - the program is pending
-                      position = await Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                              opaque: false,
-                              pageBuilder: (BuildContext context, _, __) =>
-                                  FullscreenPlayer(
-                                    id: _id,
-                                    autoPlay: _controller.value.isPlaying
-                                        ? true
-                                        : false,
-                                    controller: _controller,
-                                    position:
-                                        _controller.value.position.inSeconds,
-                                    initFuture: initFuture,
-                                    qualityValue: _qualityValue,
-                                    backgroundColor:
-                                        widget.fullScreenBackgroundColor,
-                                    overlayTimeOut: widget.overlayTimeOut,
-                                  ),
-                              transitionsBuilder: (___,
-                                  Animation<double> animation,
-                                  ____,
-                                  Widget child) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: ScaleTransition(
-                                      scale: animation, child: child),
-                                );
-                              }));
-                      setState(() {
-                        _controller.play();
-                        _seek = true;
-                      });
+                      final controllerDetails =
+                          await Navigator.push<ControllerDetails>(
+                              context,
+                              PageRouteBuilder(
+                                  opaque: false,
+                                  pageBuilder: (BuildContext context, _, __) =>
+                                      FullscreenPlayer(
+                                        id: _id,
+                                        autoPlay: playing,
+                                        controller: _controller,
+                                        position: _controller
+                                            .value.position.inSeconds,
+                                        initFuture: initFuture,
+                                        qualityValue: _qualityValue,
+                                        backgroundColor:
+                                            widget.fullScreenBackgroundColor,
+                                        overlayTimeOut: widget.overlayTimeOut,
+                                      ),
+                                  transitionsBuilder: (___,
+                                      Animation<double> animation,
+                                      ____,
+                                      Widget child) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: ScaleTransition(
+                                          scale: animation, child: child),
+                                    );
+                                  }));
+                      position = controllerDetails?.position;
+                      if (controllerDetails?.playingStatus ?? false) {
+                        setState(() {
+                          _controller.play();
+                          _seek = true;
+                        });
+                      }
                     }),
               ),
               Container(

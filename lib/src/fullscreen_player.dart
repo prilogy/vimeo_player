@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'quality_links.dart';
 import 'dart:async';
 
+import '../vimeoplayer.dart';
+
 /// Full screen video player class
 class FullscreenPlayer extends StatefulWidget {
   final String id;
@@ -111,6 +113,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   // Track the user's click back and translate
   // the screen with the player is not in fullscreen mode, return the orientation
   Future<bool> _onWillPop() {
+    final playing = _controller.value.isPlaying;
     overlayTimer?.cancel();
     setState(() {
       _controller.pause();
@@ -119,7 +122,13 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
       SystemChrome.setEnabledSystemUIOverlays(
           [SystemUiOverlay.top, SystemUiOverlay.bottom]);
     });
-    Navigator.pop(context, _controller.value.position.inSeconds);
+    Navigator.pop(
+      context,
+      ControllerDetails(
+        playingStatus: playing,
+        position: _controller.value.position.inSeconds,
+      ),
+    );
     return Future.value(true);
   }
 
@@ -389,6 +398,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                     icon: Icon(Icons.fullscreen,
                         size: 30.0, color: widget.controlsColor),
                     onPressed: () {
+                      final playing = _controller.value.isPlaying;
                       overlayTimer?.cancel();
                       setState(() {
                         _controller.pause();
@@ -400,7 +410,16 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                             [SystemUiOverlay.top, SystemUiOverlay.bottom]);
                       });
                       Navigator.pop(
-                          context, _controller.value.position.inSeconds);
+                        context,
+                        ControllerDetails(
+                          playingStatus: playing,
+                          position: _controller.value.position.inSeconds,
+                        ),
+                      );
+                      // Navigator.pop(context, {
+                      //   'position': _controller.value.position.inSeconds,
+                      //   'status': playing
+                      // });
                     }),
               ),
               Container(

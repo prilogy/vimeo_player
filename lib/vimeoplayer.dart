@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
+import 'package:wakelock/wakelock.dart';
 import 'src/quality_links.dart';
 import 'dart:async';
 import 'src/fullscreen_player.dart';
@@ -121,6 +122,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+
+    //Keep screen active till video plays
+    Wakelock.enable();
 
     super.initState();
   }
@@ -504,6 +508,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             ],
           );
         } else {
+          Wakelock
+              .disable(); //Now screen can be inactive as per system defined configurations
           return Container();
         }
       },
@@ -517,6 +523,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   void dispose() {
     overlayTimer?.cancel();
     _controller.dispose();
+    Wakelock.disable();
     super.dispose();
   }
 }

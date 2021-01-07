@@ -3,6 +3,7 @@ library vimeoplayer;
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
+import 'package:wakelock/wakelock.dart';
 import 'quality_links.dart';
 import 'dart:async';
 
@@ -106,6 +107,9 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
           [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
       SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     });
+
+    //Keep screen active till video plays
+    Wakelock.enable();
 
     super.initState();
   }
@@ -489,6 +493,8 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
             ],
           );
         } else {
+          //Screen can resume it's active status from System Configurations
+          Wakelock.disable();
           return Container();
         }
       },
@@ -501,5 +507,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   @override
   void dispose() {
     overlayTimer?.cancel();
+    Wakelock.disable();
+    super.dispose();
   }
 }

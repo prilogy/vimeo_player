@@ -29,8 +29,7 @@ class VimeoPlayer extends StatefulWidget {
   final bool commencingOverlay;
   final Color fullScreenBackgroundColor;
 
-  ///[overlayTimeOut] in seconds: decide after how much second overlay should vanishes
-  ///minimum 5 seconds of timeout is stacked
+  ///[overlayTimeOut] in seconds: decide after how much second overlay should vanishes, NOTE - minimum 5 seconds of timeout is stacked
   final int overlayTimeOut;
 
   final Color loadingIndicatorColor;

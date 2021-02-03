@@ -36,7 +36,7 @@ class VideoScreen extends StatelessWidget {
                 preferredSize: Size(0.0, 0.0),
               ),
         body: ListView(children: <Widget>[
-          VimeoPlayer(id: '395212534', autoPlay: true),
+          VimeoPlayer(id: '505942118', autoPlay: true, fullScreen: true),
         ]));
   }
 }

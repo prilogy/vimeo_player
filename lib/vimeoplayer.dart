@@ -13,17 +13,19 @@ class VimeoPlayer extends StatefulWidget {
   final bool autoPlay;
   final bool looping;
   final int position;
+  final bool fullScreen;
 
   VimeoPlayer({
     @required this.id,
     this.autoPlay,
     this.looping,
     this.position,
+    this.fullScreen,
     Key key,
   }) : super(key: key);
 
   @override
-  _VimeoPlayerState createState() => _VimeoPlayerState(id, autoPlay, looping, position);
+  _VimeoPlayerState createState() => _VimeoPlayerState(id, autoPlay, looping, position, fullScreen);
 }
 
 class _VimeoPlayerState extends State<VimeoPlayer> {
@@ -34,7 +36,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   bool fullScreen = false;
   int position;
 
-  _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position);
+  _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position, this.fullScreen);
 
   //Custom controller
   VideoPlayerController _controller;

@@ -259,6 +259,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   void dispose() {
     _chewieController.dispose();
     _videoPlayerController.dispose();
+    initFuture = null;
     super.dispose();
   }
 }

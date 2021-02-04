@@ -260,6 +260,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   @override
   void dispose() {
     _controller.dispose();
+    initFuture = null;
     super.dispose();
   }
 }

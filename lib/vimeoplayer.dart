@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'src/quality_links.dart';
 import 'dart:async';
 
-//Класс видео плеера
+//Video player class
 class VimeoPlayer extends StatefulWidget {
   final String id;
   final bool autoPlay;
@@ -48,18 +48,17 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   //Quality Class
   QualityLinks _quality;
-  Map _qualityValues;
   var _qualityValue;
 
-  //Переменная перемотки
+  //Variable rewind
   bool _seek = false;
 
-  //Переменные видео
+  //Video variables
   double videoHeight;
   double videoWidth;
   double videoMargin;
 
-  //Переменные под зоны дабл-тапа
+  //Variables for double-tap zones
   double doubleTapRMargin = 36;
   double doubleTapRWidth = 400;
   double doubleTapRHeight = 160;
@@ -74,9 +73,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
     //Create class
     _quality = QualityLinks(_id);
 
-    //Инициализация контроллеров видео при получении данных из Vimeo
+    //Initializing video controllers when receiving data from Vimeo
     _quality.getQualitiesSync().then((value) {
-      _qualityValues = value;
       _qualityValue = value[value.lastKey()];
       _controller = VideoPlayerController.network(_qualityValue);
       _controller.setLooping(looping);
@@ -107,20 +105,20 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
         );
       });
 
-      //Обновление состояние приложения и перерисовка
+      //Update orientation and rebuilding page
       setState(() {
         SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
       });
     });
 
-    //На странице видео преимущество за портретной ориентацией
+    //The video page takes precedence over portrait orientation
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
 
     super.initState();
   }
 
-  //Отрисовываем элементы плеера
+  //Build player element
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -132,12 +130,12 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               future: initFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
-                  //Управление шириной и высотой видео
+                  //Controlling width and height
                   double delta = MediaQuery.of(context).size.width -
                       MediaQuery.of(context).size.height * _controller.value.aspectRatio;
 
-                  //Рассчет ширины и высоты видео плеера относительно сторон
-                  // и ориентации устройства
+                  //Calculating the width and height of the video player relative to the sides
+                  // and orientation of the device
                   if (MediaQuery.of(context).orientation == Orientation.portrait || delta < 0) {
                     videoHeight = MediaQuery.of(context).size.width / _controller.value.aspectRatio;
                     videoWidth = MediaQuery.of(context).size.width;
@@ -148,7 +146,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                     videoMargin = (MediaQuery.of(context).size.width - videoWidth) / 2;
                   }
 
-                  //Начинаем с того же места, где и остановились при смене качества
+                  //We start from the same place where we left off when changing quality
                   if (_seek && _controller.value.duration.inSeconds > 2) {
                     _controller.seekTo(Duration(seconds: position));
                     _seek = false;
@@ -168,8 +166,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                 }
               }),
           onTap: () {
-            //Редактируем размер области дабл тапа при показе оверлея.
-            // Сделано для открытия кнопок "Во весь экран" и "Качество"
+            //Editing the size of the double tap area when showing the overlay.
+            // Made to open the "Full Screen" and "Quality" buttons
             setState(() {
               _overlay = !_overlay;
               if (_overlay) {
@@ -187,7 +185,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
           },
         ),
         GestureDetector(
-            //======= Перемотка назад =======//
+            //======= Rewind =======//
             child: Container(
               width: doubleTapLWidth / 2 - 30,
               height: doubleTapLHeight - 46,
@@ -197,8 +195,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                   ),
             ),
 
-            // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
-            // "Во весь экран" и "Качество" при включенном overlay
+            // Resize double tap blocks. Needed to open the
+            // "Full Screen" and "Quality" buttons when overlay is enabled
             onTap: () {
               setState(() {
                 _overlay = !_overlay;
@@ -222,7 +220,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             }),
         GestureDetector(
             child: Container(
-              //======= Перемотка вперед =======//
+              //======= Flash forward =======//
               width: doubleTapRWidth / 2 - 45,
               height: doubleTapRHeight - 60,
               margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45, doubleTapRMargin, 0, doubleTapRMargin + 20),
@@ -230,8 +228,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                   //color: Colors.red,
                   ),
             ),
-            // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
-            // "Во весь экран" и "Качество" при включенном overlay
+            // Resize double tap blocks. Needed to open the
+            // "Full Screen" and "Quality" buttons when overlay is enabled
             onTap: () {
               setState(() {
                 _overlay = !_overlay;

@@ -10,23 +10,35 @@ import 'dart:async';
 //Video player class
 class VimeoPlayer extends StatefulWidget {
   final String id;
+  final VideoPlayerController controller;
   final bool autoPlay;
   final bool looping;
   final int position;
   final bool allowFullScreen;
+  final bool allowPlaybackSpeedChanging;
 
   VimeoPlayer({
     @required this.id,
+    @required this.controller,
     this.autoPlay,
     this.looping,
     this.position,
     @required this.allowFullScreen,
+    this.allowPlaybackSpeedChanging,
     Key key,
   })  : assert(id != null && allowFullScreen != null),
         super(key: key);
 
   @override
-  _VimeoPlayerState createState() => _VimeoPlayerState(id, autoPlay, looping, position, allowFullScreen);
+  _VimeoPlayerState createState() => _VimeoPlayerState(
+        id,
+        controller,
+        autoPlay,
+        looping,
+        position,
+        allowFullScreen,
+        allowPlaybackSpeedChanging,
+      );
 }
 
 class _VimeoPlayerState extends State<VimeoPlayer> {
@@ -36,9 +48,18 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   bool _overlay = true;
   bool fullScreen = false;
   bool allowFullScreen = false;
+  bool allowPlaybackSpeedChanging = false;
   int position;
 
-  _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position, this.allowFullScreen);
+  _VimeoPlayerState(
+    this._id,
+    this._controller,
+    this.autoPlay,
+    this.looping,
+    this.position,
+    this.allowFullScreen,
+    this.allowPlaybackSpeedChanging,
+  );
 
   //Custom controller
   VideoPlayerController _controller;
@@ -92,15 +113,11 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
           aspectRatio: _controller.value.aspectRatio,
           looping: looping,
           autoPlay: autoPlay,
+          allowPlaybackSpeedChanging: allowPlaybackSpeedChanging,
           // Errors can occur for example when trying to play a video
           // from a non-existent URL
           errorBuilder: (context, errorMessage) {
-            return Center(
-              child: Text(
-                errorMessage,
-                style: TextStyle(color: Colors.white),
-              ),
-            );
+            return Center(child: Text(errorMessage, style: TextStyle(color: Colors.white)));
           },
         );
       });

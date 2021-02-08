@@ -24,7 +24,7 @@ class VimeoPlayer extends StatefulWidget {
     this.looping,
     this.position,
     @required this.allowFullScreen,
-    this.allowPlaybackSpeedChanging,
+    this.allowPlaybackSpeedChanging = false,
     Key key,
   })  : assert(id != null && allowFullScreen != null),
         super(key: key);

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 import 'vimeoplayer.dart';
 
 void main() => runApp(MyApp());
@@ -19,8 +18,6 @@ class MyApp extends StatelessWidget {
 }
 
 class VideoScreen extends StatelessWidget {
-  VideoPlayerController _controller;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +36,7 @@ class VideoScreen extends StatelessWidget {
                 preferredSize: Size(0.0, 0.0),
               ),
         body: ListView(children: <Widget>[
-          VimeoPlayer(id: '505942118', controller: _controller, autoPlay: true, allowFullScreen: true),
+          VimeoPlayer(id: '505942118', autoPlay: true, allowFullScreen: true),
         ]));
   }
 }

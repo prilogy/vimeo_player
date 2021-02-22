@@ -10,7 +10,6 @@ import 'dart:async';
 //Video player class
 class VimeoPlayer extends StatefulWidget {
   final String id;
-  final VideoPlayerController controller;
   final bool autoPlay;
   final bool looping;
   final int position;
@@ -19,7 +18,6 @@ class VimeoPlayer extends StatefulWidget {
 
   VimeoPlayer({
     @required this.id,
-    @required this.controller,
     this.autoPlay,
     this.looping,
     this.position,
@@ -32,7 +30,6 @@ class VimeoPlayer extends StatefulWidget {
   @override
   _VimeoPlayerState createState() => _VimeoPlayerState(
         id,
-        controller,
         autoPlay,
         looping,
         position,
@@ -53,7 +50,6 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   _VimeoPlayerState(
     this._id,
-    this._controller,
     this.autoPlay,
     this.looping,
     this.position,

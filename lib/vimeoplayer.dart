@@ -408,11 +408,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.position.inMinutes.toString() +
-                    ':' +
-                    (value.position.inSeconds - value.position.inMinutes * 60)
-                        .toString()),
-              ),
+                child: Text(
+                  '${_asTwoDigits(value.position.inMinutes)}:${_asTwoDigits(value.position.inSeconds - value.position.inMinutes * 60)}',
+                ),
               Container(
                 height: 20,
                 width: videoWidth - 92,
@@ -430,10 +428,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.duration.inMinutes.toString() +
-                    ':' +
-                    (value.duration.inSeconds - value.duration.inMinutes * 60)
-                        .toString()),
+                child: Text(
+                  '${_asTwoDigits(value.duration.inMinutes)}:${_asTwoDigits(value.duration.inSeconds - value.duration.inMinutes * 60)}',
+                ),
               ),
             ],
           );
@@ -443,6 +440,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
       },
     );
   }
+
+  String _asTwoDigits(int n) => n?.toString()?.padLeft(2, '0') ?? '';
 
   @override
   void dispose() {

@@ -1,11 +1,11 @@
 library vimeoplayer;
 
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
 import 'src/quality_links.dart';
 import 'dart:async';
-import 'src/fullscreen_player.dart';
 
 //Класс видео плеера
 class VimeoPlayer extends StatefulWidget {
@@ -13,18 +13,29 @@ class VimeoPlayer extends StatefulWidget {
   final bool autoPlay;
   final bool looping;
   final int position;
+  final bool allowFullScreen;
+  final bool allowPlaybackSpeedChanging;
 
   VimeoPlayer({
     @required this.id,
     this.autoPlay,
     this.looping,
     this.position,
+    @required this.allowFullScreen,
+    this.allowPlaybackSpeedChanging = false,
     Key key,
-  }) : super(key: key);
+  })  : assert(id != null && allowFullScreen != null),
+        super(key: key);
 
   @override
-  _VimeoPlayerState createState() =>
-      _VimeoPlayerState(id, autoPlay, looping, position);
+  _VimeoPlayerState createState() => _VimeoPlayerState(
+        id,
+        autoPlay,
+        looping,
+        position,
+        allowFullScreen,
+        allowPlaybackSpeedChanging,
+      );
 }
 
 class _VimeoPlayerState extends State<VimeoPlayer> {
@@ -33,12 +44,23 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   bool looping = false;
   bool _overlay = true;
   bool fullScreen = false;
+  bool allowFullScreen = false;
+  bool allowPlaybackSpeedChanging = false;
   int position;
 
-  _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position);
+  _VimeoPlayerState(
+    this._id,
+    this.autoPlay,
+    this.looping,
+    this.position,
+    this.allowFullScreen,
+    this.allowPlaybackSpeedChanging,
+  );
 
   //Custom controller
-  VideoPlayerController _controller;
+  VideoPlayerController _videoPlayerController;
+  ChewieController _chewieController;
+
   Future<void> initFuture;
 
   //Quality Class
@@ -64,6 +86,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   @override
   void initState() {
+    fullScreen = allowFullScreen;
+
     //Create class
     _quality = QualityLinks(_id);
 
@@ -71,21 +95,37 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
     _quality.getQualitiesSync().then((value) {
       _qualityValues = value;
       _qualityValue = value[value.lastKey()];
-      _controller = VideoPlayerController.network(_qualityValue);
-      _controller.setLooping(looping);
-      if (autoPlay) _controller.play();
-      initFuture = _controller.initialize();
+      _videoPlayerController = VideoPlayerController.network(_qualityValue);
+      initFuture = _videoPlayerController.initialize().then((value) {
+        _chewieController = ChewieController(
+          videoPlayerController: _videoPlayerController,
+          // Prepare the video to be played and display the first frame
+          autoInitialize: true,
+          allowFullScreen: fullScreen,
+          deviceOrientationsOnEnterFullScreen: [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight],
+          systemOverlaysOnEnterFullScreen: [SystemUiOverlay.bottom],
+          deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp],
+          systemOverlaysAfterFullScreen: [SystemUiOverlay.top, SystemUiOverlay.bottom],
+          aspectRatio: _videoPlayerController.value.aspectRatio,
+          looping: looping,
+          autoPlay: autoPlay,
+          allowPlaybackSpeedChanging: allowPlaybackSpeedChanging,
+          // Errors can occur for example when trying to play a videos
+          // from a non-existent URL
+          errorBuilder: (context, errorMessage) {
+            return Center(child: Text(errorMessage, style: TextStyle(color: Colors.white)));
+          },
+        );
+      });
 
       //Обновление состояние приложения и перерисовка
       setState(() {
-        SystemChrome.setPreferredOrientations(
-            [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
+        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
       });
     });
 
     //На странице видео преимущество за портретной ориентацией
-    SystemChrome.setPreferredOrientations(
-        [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
 
     super.initState();
@@ -105,50 +145,36 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                 if (snapshot.connectionState == ConnectionState.done) {
                   //Управление шириной и высотой видео
                   double delta = MediaQuery.of(context).size.width -
-                      MediaQuery.of(context).size.height *
-                          _controller.value.aspectRatio;
+                      MediaQuery.of(context).size.height * _videoPlayerController.value.aspectRatio;
 
                   //Рассчет ширины и высоты видео плеера относительно сторон
                   // и ориентации устройства
-                  if (MediaQuery.of(context).orientation ==
-                          Orientation.portrait ||
-                      delta < 0) {
-                    videoHeight = MediaQuery.of(context).size.width /
-                        _controller.value.aspectRatio;
+                  if (MediaQuery.of(context).orientation == Orientation.portrait || delta < 0) {
+                    videoHeight = MediaQuery.of(context).size.width / _videoPlayerController.value.aspectRatio;
                     videoWidth = MediaQuery.of(context).size.width;
                     videoMargin = 0;
                   } else {
                     videoHeight = MediaQuery.of(context).size.height;
-                    videoWidth = videoHeight * _controller.value.aspectRatio;
-                    videoMargin =
-                        (MediaQuery.of(context).size.width - videoWidth) / 2;
+                    videoWidth = videoHeight * _videoPlayerController.value.aspectRatio;
+                    videoMargin = (MediaQuery.of(context).size.width - videoWidth) / 2;
                   }
 
                   //Начинаем с того же места, где и остановились при смене качества
-                  if (_seek && _controller.value.duration.inSeconds > 2) {
-                    _controller.seekTo(Duration(seconds: position));
+                  if (_seek && _videoPlayerController.value.duration.inSeconds > 2) {
+                    _videoPlayerController.seekTo(Duration(seconds: position));
                     _seek = false;
                   }
 
-                  //Отрисовка элементов плеера
-                  return Stack(
-                    children: <Widget>[
-                      Container(
-                        height: videoHeight,
-                        width: videoWidth,
-                        margin: EdgeInsets.only(left: videoMargin),
-                        child: VideoPlayer(_controller),
-                      ),
-                      _videoOverlay(),
-                    ],
+                  return Container(
+                    margin: EdgeInsets.only(left: videoMargin),
+                    child: Chewie(controller: _chewieController),
                   );
                 } else {
                   return Center(
                       heightFactor: 6,
                       child: CircularProgressIndicator(
                         strokeWidth: 4,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFF22A3D2)),
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF22A3D2)),
                       ));
                 }
               }),
@@ -176,11 +202,10 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             child: Container(
               width: doubleTapLWidth / 2 - 30,
               height: doubleTapLHeight - 46,
-              margin: EdgeInsets.fromLTRB(
-                  0, 10, doubleTapLWidth / 2 + 30, doubleTapLMargin + 20),
+              margin: EdgeInsets.fromLTRB(0, 10, doubleTapLWidth / 2 + 30, doubleTapLMargin + 20),
               decoration: BoxDecoration(
-                //color: Colors.red,
-              ),
+                  //color: Colors.red,
+                  ),
             ),
 
             // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
@@ -203,8 +228,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             },
             onDoubleTap: () {
               setState(() {
-                _controller.seekTo(Duration(
-                    seconds: _controller.value.position.inSeconds - 10));
+                _videoPlayerController.seekTo(Duration(seconds: _videoPlayerController.value.position.inSeconds - 10));
               });
             }),
         GestureDetector(
@@ -212,11 +236,10 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               //======= Перемотка вперед =======//
               width: doubleTapRWidth / 2 - 45,
               height: doubleTapRHeight - 60,
-              margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45,
-                  doubleTapRMargin, 0, doubleTapRMargin + 20),
+              margin: EdgeInsets.fromLTRB(doubleTapRWidth / 2 + 45, doubleTapRMargin, 0, doubleTapRMargin + 20),
               decoration: BoxDecoration(
-                //color: Colors.red,
-              ),
+                  //color: Colors.red,
+                  ),
             ),
             // Изменение размера блоков дабл тапа. Нужно для открытия кнопок
             // "Во весь экран" и "Качество" при включенном overlay
@@ -238,215 +261,18 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             },
             onDoubleTap: () {
               setState(() {
-                _controller.seekTo(Duration(
-                    seconds: _controller.value.position.inSeconds + 10));
+                _videoPlayerController.seekTo(Duration(seconds: _videoPlayerController.value.position.inSeconds + 10));
               });
             }),
       ],
     ));
   }
 
-  //================================ Quality ================================//
-  void _settingModalBottomSheet(context) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext bc) {
-          //Формирования списка качества
-          final children = <Widget>[];
-          _qualityValues.forEach((elem, value) => (children.add(new ListTile(
-              title: new Text(" ${elem.toString()} fps"),
-              onTap: () => {
-                    //Обновление состояние приложения и перерисовка
-                    setState(() {
-                      _controller.pause();
-                      _qualityValue = value;
-                      _controller =
-                          VideoPlayerController.network(_qualityValue);
-                      _controller.setLooping(true);
-                      _seek = true;
-                      initFuture = _controller.initialize();
-                      _controller.play();
-                    }),
-                  }))));
-          //Вывод элементов качество списком
-          return Container(
-            child: Wrap(
-              children: children,
-            ),
-          );
-        });
-  }
-
-  //================================ OVERLAY ================================//
-  Widget _videoOverlay() {
-    return _overlay
-        ? Stack(
-            children: <Widget>[
-              GestureDetector(
-                child: Center(
-                  child: Container(
-                    width: videoWidth,
-                    height: videoHeight,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.centerRight,
-                        end: Alignment.centerLeft,
-                        colors: [
-                          const Color(0x662F2C47),
-                          const Color(0x662F2C47)
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Center(
-                child: IconButton(
-                    padding: EdgeInsets.only(
-                        top: videoHeight / 2 - 30,
-                        bottom: videoHeight / 2 - 30),
-                    icon: _controller.value.isPlaying
-                        ? Icon(Icons.pause, size: 60.0)
-                        : Icon(Icons.play_arrow, size: 60.0),
-                    onPressed: () {
-                      setState(() {
-                        _controller.value.isPlaying
-                            ? _controller.pause()
-                            : _controller.play();
-                      });
-                    }),
-              ),
-              Container(
-                margin: EdgeInsets.only(
-                    top: videoHeight - 70, left: videoWidth + videoMargin - 50),
-                child: IconButton(
-                    alignment: AlignmentDirectional.center,
-                    icon: Icon(Icons.fullscreen, size: 30.0),
-                    onPressed: () async {
-                      setState(() {
-                        _controller.pause();
-                      });
-                      //Создание новой страницы с плеером во весь экран,
-                      // предача данных в плеер и возвращение позиции при
-                      // возвращении обратно. Пока что мы не вернулись из
-                      // фуллскрина - программа в ожидании
-                      position = await Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                              opaque: false,
-                              pageBuilder: (BuildContext context, _, __) =>
-                                  FullscreenPlayer(
-                                      id: _id,
-                                      autoPlay: true,
-                                      controller: _controller,
-                                      position:
-                                          _controller.value.position.inSeconds,
-                                      initFuture: initFuture,
-                                      qualityValue: _qualityValue),
-                              transitionsBuilder: (___,
-                                  Animation<double> animation,
-                                  ____,
-                                  Widget child) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: ScaleTransition(
-                                      scale: animation, child: child),
-                                );
-                              }));
-                      setState(() {
-                        _controller.play();
-                        _seek = true;
-                      });
-                    }),
-              ),
-              Container(
-                margin: EdgeInsets.only(left: videoWidth + videoMargin - 48),
-                child: IconButton(
-                    icon: Icon(Icons.settings, size: 26.0),
-                    onPressed: () {
-                      position = _controller.value.position.inSeconds;
-                      _seek = true;
-                      _settingModalBottomSheet(context);
-                      setState(() {});
-                    }),
-              ),
-              Container(
-                //===== Ползунок =====//
-                margin: EdgeInsets.only(
-                    top: videoHeight - 26, left: videoMargin), //CHECK IT
-                child: _videoOverlaySlider(),
-              )
-            ],
-          )
-        : Center(
-            child: Container(
-              height: 5,
-              width: videoWidth,
-              margin: EdgeInsets.only(top: videoHeight - 5),
-              child: VideoProgressIndicator(
-                _controller,
-                allowScrubbing: true,
-                colors: VideoProgressColors(
-                  playedColor: Color(0xFF22A3D2),
-                  backgroundColor: Color(0x5515162B),
-                  bufferedColor: Color(0x5583D8F7),
-                ),
-                padding: EdgeInsets.only(top: 2),
-              ),
-            ),
-          );
-  }
-
-  //=================== ПОЛЗУНОК ===================//
-  Widget _videoOverlaySlider() {
-    return ValueListenableBuilder(
-      valueListenable: _controller,
-      builder: (context, VideoPlayerValue value, child) {
-        if (!value.hasError && value.initialized) {
-          return Row(
-            children: <Widget>[
-              Container(
-                width: 46,
-                alignment: Alignment(0, 0),
-                child: Text(value.position.inMinutes.toString() +
-                    ':' +
-                    (value.position.inSeconds - value.position.inMinutes * 60)
-                        .toString()),
-              ),
-              Container(
-                height: 20,
-                width: videoWidth - 92,
-                child: VideoProgressIndicator(
-                  _controller,
-                  allowScrubbing: true,
-                  colors: VideoProgressColors(
-                    playedColor: Color(0xFF22A3D2),
-                    backgroundColor: Color(0x5515162B),
-                    bufferedColor: Color(0x5583D8F7),
-                  ),
-                  padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-                ),
-              ),
-              Container(
-                width: 46,
-                alignment: Alignment(0, 0),
-                child: Text(value.duration.inMinutes.toString() +
-                    ':' +
-                    (value.duration.inSeconds - value.duration.inMinutes * 60)
-                        .toString()),
-              ),
-            ],
-          );
-        } else {
-          return Container();
-        }
-      },
-    );
-  }
-
   @override
   void dispose() {
-    _controller.dispose();
+    _chewieController.dispose();
+    _videoPlayerController.dispose();
+    initFuture = null;
     super.dispose();
   }
 }

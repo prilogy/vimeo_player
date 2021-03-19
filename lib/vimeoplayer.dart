@@ -165,10 +165,14 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                     _seek = false;
                   }
 
-                  return Container(
-                    margin: EdgeInsets.only(left: videoMargin),
-                    child: Chewie(controller: _chewieController),
-                  );
+                  //Prevent exception if it failes when initialising the vimeo video player
+                  if(_chewieController != null) {
+                    return Container(
+                      margin: EdgeInsets.only(left: videoMargin),
+                      child: Chewie(controller: _chewieController),
+                    );
+                  }
+                  return Container();
                 } else {
                   return Center(
                       heightFactor: 6,

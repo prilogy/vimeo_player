@@ -429,10 +429,6 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-<<<<<<< HEAD
-                child: Text(
-                  '${_asTwoDigits(value.position.inMinutes)}:${_asTwoDigits(value.position.inSeconds - value.position.inMinutes * 60)}',
-                ),
 
                 child: Text(
                   '${_asTwoDigits(value.position.inMinutes)}:${_asTwoDigits(value.position.inSeconds - value.position.inMinutes * 60)}',

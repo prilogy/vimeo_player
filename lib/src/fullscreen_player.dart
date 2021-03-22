@@ -422,13 +422,6 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-<<<<<<< HEAD
-
-                child: Text(
-                  '${_asTwoDigits(value.duration.inMinutes)}:${_asTwoDigits(value.duration.inSeconds - value.duration.inMinutes * 60)}',
-                ),
-
-
                 child: Text(
                   '${_asTwoDigits(value.duration.inMinutes)}:${_asTwoDigits(value.duration.inSeconds - value.duration.inMinutes * 60)}',
                 ),

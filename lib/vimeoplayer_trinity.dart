@@ -1,4 +1,4 @@
-library vimeoplayer;
+library vimeoplayer_trinity;
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -13,18 +13,25 @@ class VimeoPlayer extends StatefulWidget {
   final bool autoPlay;
   final bool looping;
   final int position;
+  final Color iconColor;
+  final Color sliderPlayedColor;
+  final Color sliderBufferedColor;
+  final double videoMarginTop;
+  final TextStyle videoStartStyle;
+  final TextStyle videoEndStyle;
 
   VimeoPlayer({
     @required this.id,
     this.autoPlay,
     this.looping,
+    this.videoMarginTop,
     this.position,
-    Key key,
+    Key key, this.iconColor, this.sliderPlayedColor, this.sliderBufferedColor, this.videoStartStyle, this.videoEndStyle,
   }) : super(key: key);
 
   @override
   _VimeoPlayerState createState() =>
-      _VimeoPlayerState(id, autoPlay, looping, position);
+      _VimeoPlayerState(id, autoPlay, looping, position, videoMarginTop);
 }
 
 class _VimeoPlayerState extends State<VimeoPlayer> {
@@ -33,9 +40,10 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   bool looping = false;
   bool _overlay = true;
   bool fullScreen = false;
+  double _videoMarginTop = 0;
   int position;
 
-  _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position);
+  _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position, this._videoMarginTop);
 
   //Custom controller
   VideoPlayerController _controller;
@@ -61,6 +69,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   double doubleTapLMargin = 10;
   double doubleTapLWidth = 400;
   double doubleTapLHeight = 160;
+
+  
 
   @override
   void initState() {
@@ -94,6 +104,10 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   //Отрисовываем элементы плеера
   @override
   Widget build(BuildContext context) {
+
+  
+    
+
     return Center(
         child: Stack(
       alignment: AlignmentDirectional.center,
@@ -136,10 +150,10 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       Container(
                         height: videoHeight,
                         width: videoWidth,
-                        margin: EdgeInsets.only(left: videoMargin),
+                        margin: EdgeInsets.only(left: videoMargin, top: _videoMarginTop),
                         child: VideoPlayer(_controller),
                       ),
-                      _videoOverlay(),
+                      _videoOverlay(_videoMarginTop),
                     ],
                   );
                 } else {
@@ -278,106 +292,113 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   }
 
   //================================ OVERLAY ================================//
-  Widget _videoOverlay() {
+  Widget _videoOverlay(double settingsMarginTop) {
     return _overlay
-        ? Stack(
-            children: <Widget>[
-              GestureDetector(
-                child: Center(
-                  child: Container(
-                    width: videoWidth,
-                    height: videoHeight,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.centerRight,
-                        end: Alignment.centerLeft,
-                        colors: [
-                          const Color(0x662F2C47),
-                          const Color(0x662F2C47)
-                        ],
+        ? Container(
+          margin: EdgeInsets.only(top: 0.0,),
+          child: Stack(
+              children: <Widget>[
+                GestureDetector(
+                  child: Center(
+                    child: Container(
+                      width: videoWidth,
+                      height: videoHeight,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerRight,
+                          end: Alignment.centerLeft,
+                          colors: [
+                            const Color(0x662F2C47),
+                            const Color(0x662F2C47)
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Center(
-                child: IconButton(
-                    padding: EdgeInsets.only(
-                        top: videoHeight / 2 - 30,
-                        bottom: videoHeight / 2 - 30),
-                    icon: _controller.value.isPlaying
-                        ? Icon(Icons.pause, size: 60.0)
-                        : Icon(Icons.play_arrow, size: 60.0),
-                    onPressed: () {
-                      setState(() {
-                        _controller.value.isPlaying
-                            ? _controller.pause()
-                            : _controller.play();
-                      });
-                    }),
-              ),
-              Container(
-                margin: EdgeInsets.only(
-                    top: videoHeight - 70, left: videoWidth + videoMargin - 50),
-                child: IconButton(
-                    alignment: AlignmentDirectional.center,
-                    icon: Icon(Icons.fullscreen, size: 30.0),
-                    onPressed: () async {
-                      setState(() {
-                        _controller.pause();
-                      });
-                      //Создание новой страницы с плеером во весь экран,
-                      // предача данных в плеер и возвращение позиции при
-                      // возвращении обратно. Пока что мы не вернулись из
-                      // фуллскрина - программа в ожидании
-                      position = await Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                              opaque: false,
-                              pageBuilder: (BuildContext context, _, __) =>
-                                  FullscreenPlayer(
-                                      id: _id,
-                                      autoPlay: true,
-                                      controller: _controller,
-                                      position:
-                                          _controller.value.position.inSeconds,
-                                      initFuture: initFuture,
-                                      qualityValue: _qualityValue),
-                              transitionsBuilder: (___,
-                                  Animation<double> animation,
-                                  ____,
-                                  Widget child) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: ScaleTransition(
-                                      scale: animation, child: child),
-                                );
-                              }));
-                      setState(() {
-                        _controller.play();
+                Center(
+                  child: IconButton(
+                      padding: EdgeInsets.only(
+                          top: videoHeight / 2 - 30,
+                          bottom: videoHeight / 2 - 30),
+                      icon: _controller.value.isPlaying
+                          ? Icon(Icons.pause, size: 60.0, color: widget.iconColor,)
+                          : Icon(Icons.play_arrow, size: 60.0, color: widget.iconColor),
+                      onPressed: () {
+                        setState(() {
+                          _controller.value.isPlaying
+                              ? _controller.pause()
+                              : _controller.play();
+                        });
+                      }),
+                ),
+                Container(
+                  margin: EdgeInsets.only(
+                      top: videoHeight - 70 + _videoMarginTop, left: videoWidth + videoMargin - 50),
+                  child: IconButton(
+                      alignment: AlignmentDirectional.center,
+                      icon: Icon(Icons.fullscreen, size: 30.0, color: widget.iconColor),
+                      onPressed: () async {
+                        setState(() {
+                          _controller.pause();
+                        });
+                        //Создание новой страницы с плеером во весь экран,
+                        // предача данных в плеер и возвращение позиции при
+                        // возвращении обратно. Пока что мы не вернулись из
+                        // фуллскрина - программа в ожидании
+                        position = await Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                                opaque: false,
+                                pageBuilder: (BuildContext context, _, __) =>
+                                    FullscreenPlayer(
+                                        id: _id,
+                                        autoPlay: true,
+                                        controller: _controller,
+                                        position:
+                                            _controller.value.position.inSeconds,
+                                        initFuture: initFuture,
+                                        qualityValue: _qualityValue,
+                                        videoStartStyle: widget.videoStartStyle,
+                                        videoEndStyle: widget.videoEndStyle,
+                                        sliderPlayedColor: widget.sliderPlayedColor,
+                                        sliderBufferedColor: widget.sliderBufferedColor,),
+                                transitionsBuilder: (___,
+                                    Animation<double> animation,
+                                    ____,
+                                    Widget child) {
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: ScaleTransition(
+                                        scale: animation, child: child),
+                                  );
+                                }));
+                        setState(() {
+                          _controller.play();
+                          _seek = true;
+                        });
+                      }),
+                ),
+                Container(
+                  margin: EdgeInsets.only(left: videoWidth + videoMargin - 48, top: settingsMarginTop),
+                  child: IconButton(
+                      icon: Icon(Icons.settings, size: 26.0, color: widget.iconColor),
+                      onPressed: () {
+                        position = _controller.value.position.inSeconds;
                         _seek = true;
-                      });
-                    }),
-              ),
-              Container(
-                margin: EdgeInsets.only(left: videoWidth + videoMargin - 48),
-                child: IconButton(
-                    icon: Icon(Icons.settings, size: 26.0),
-                    onPressed: () {
-                      position = _controller.value.position.inSeconds;
-                      _seek = true;
-                      _settingModalBottomSheet(context);
-                      setState(() {});
-                    }),
-              ),
-              Container(
-                //===== Ползунок =====//
-                margin: EdgeInsets.only(
-                    top: videoHeight - 26, left: videoMargin), //CHECK IT
-                child: _videoOverlaySlider(),
-              )
-            ],
-          )
+                        _settingModalBottomSheet(context);
+                        setState(() {});
+                      }),
+                ),
+                Container(
+                  //===== Ползунок =====//
+                  margin: EdgeInsets.only(
+                      top: videoHeight - 26, left: videoMargin), //CHECK IT
+                  child: _videoOverlaySlider(),
+                )
+              ],
+            ),
+        )
         : Center(
             child: Container(
               height: 5,
@@ -387,9 +408,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                 _controller,
                 allowScrubbing: true,
                 colors: VideoProgressColors(
-                  playedColor: Color(0xFF22A3D2),
-                  backgroundColor: Color(0x5515162B),
-                  bufferedColor: Color(0x5583D8F7),
+                   playedColor: widget.sliderPlayedColor == null ? Color(0xFF22A3D2) : widget.sliderPlayedColor,
+                    backgroundColor: Color(0x5515162B),
+                    bufferedColor: widget.sliderBufferedColor == null ?Color(0x5583D8F7): widget.sliderBufferedColor,
                 ),
                 padding: EdgeInsets.only(top: 2),
               ),
@@ -408,11 +429,15 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.position.inMinutes.toString() +
-                    ':' +
-                    (value.position.inSeconds - value.position.inMinutes * 60)
-                        .toString()),
-              ),
+<<<<<<< HEAD
+                child: Text(
+                  '${_asTwoDigits(value.position.inMinutes)}:${_asTwoDigits(value.position.inSeconds - value.position.inMinutes * 60)}',
+                ),
+
+                child: Text(
+                  '${_asTwoDigits(value.position.inMinutes)}:${_asTwoDigits(value.position.inSeconds - value.position.inMinutes * 60)}',
+                ),
+
               Container(
                 height: 20,
                 width: videoWidth - 92,
@@ -420,9 +445,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                   _controller,
                   allowScrubbing: true,
                   colors: VideoProgressColors(
-                    playedColor: Color(0xFF22A3D2),
+                    playedColor: widget.sliderPlayedColor == null ? Color(0xFF22A3D2) : widget.sliderPlayedColor,
                     backgroundColor: Color(0x5515162B),
-                    bufferedColor: Color(0x5583D8F7),
+                    bufferedColor: widget.sliderBufferedColor == null ?Color(0x5583D8F7): widget.sliderBufferedColor,
                   ),
                   padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
                 ),
@@ -430,10 +455,11 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.duration.inMinutes.toString() +
-                    ':' +
-                    (value.duration.inSeconds - value.duration.inMinutes * 60)
-                        .toString()),
+
+                child: Text(
+                  '${_asTwoDigits(value.duration.inMinutes)}:${_asTwoDigits(value.duration.inSeconds - value.duration.inMinutes * 60)}',
+                ),
+
               ),
             ],
           );
@@ -443,6 +469,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
       },
     );
   }
+
+  String _asTwoDigits(int n) => n?.toString()?.padLeft(2, '0') ?? '';
 
   @override
   void dispose() {

@@ -1,6 +1,8 @@
-# vimeoplayer
+# Vimeoplayer Trinity
 
 A new Flutter package for playing any videos from Vimeo by id. 
+This is a fork from [prilogy vimeo_player](https://github.com/prilogy/vimeo_player) he has not been responding to issues or PRs i thought i would fork and add new features
+
 
 Functions:
 * Download video from link
@@ -9,6 +11,24 @@ Functions:
 * Pause and play
 * Rewind
 * Double tap rewind
+* You can add some customizations
+
+## New Parameters
+I added new parameters which you can specify:
+
+   #### iconColor: 
+     -> change icon color
+   #### videoTopMargin: 
+     -> change video position 
+   #### videoStartStyle: 
+     -> Change video time start style(color, etc)
+   #### videoEndStyle: 
+     -> Change video end start style(color, etc)
+   #### sliderPlayedColor: 
+     -> Change slider played color
+   #### sliderBufferedColor: 
+     -> Change slider played color
+
 
 ## Getting Started
 
@@ -49,7 +69,7 @@ On iOS, the backing player is AVPlayer. The supported formats vary depending on 
 On Android, the backing player is ExoPlayer, please refer here for list of supported formats.
 On Web, available formats depend on your users' browsers (vendor and version). Check package:video_player_web for more specific information.
 
-## Example
+## Examples
 
 ```import 'package:flutter/material.dart';
 import 'package:vimeoplayer/vimeoplayer.dart';
@@ -89,7 +109,19 @@ class VideoScreen extends StatelessWidget {
                 preferredSize: Size(0.0, 0.0),
               ),
         body: ListView(children: <Widget>[
-          VimeoPlayer(id: '395212534', autoPlay: true),
+          VimeoPlayer(
+     "SOME_ID", 
+      iconColor: Colors.redAccent,
+      videoTopMargin: 20.0,
+      videoStartStyle: TextStyle(
+           color: Colors.white
+      ),
+      videoEndStyle: TextStyle(
+           color: Colors.white
+      ),
+      sliderBufferedColor: Colors.redAccent,
+      sliderPlayedColor: Colors.red
+)
         ]));
   }
 }

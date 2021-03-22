@@ -13,6 +13,11 @@ class FullscreenPlayer extends StatefulWidget {
   final bool looping;
   final VideoPlayerController controller;
   final position;
+  final Color iconColor;
+  final Color sliderPlayedColor;
+  final Color sliderBufferedColor;
+  final TextStyle videoStartStyle;
+  final TextStyle videoEndStyle;
   final Future<void> initFuture;
   final String qualityValue;
 
@@ -24,7 +29,7 @@ class FullscreenPlayer extends StatefulWidget {
     this.position,
     this.initFuture,
     this.qualityValue,
-    Key key,
+    Key key, this.iconColor, this.sliderPlayedColor, this.sliderBufferedColor, this.videoStartStyle, this.videoEndStyle,
   }) : super(key: key);
 
   @override
@@ -69,6 +74,8 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   double doubleTapLMarginFS = 10;
   double doubleTapLWidthFS = 700;
   double doubleTapLHeightFS = 400;
+
+  String _asTwoDigits(int n) => n?.toString()?.padLeft(2, '0') ?? '';
 
   @override
   void initState() {
@@ -331,8 +338,8 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                       bottom: videoHeight / 2 - 30,
                     ),
                     icon: _controller.value.isPlaying
-                        ? Icon(Icons.pause, size: 60.0)
-                        : Icon(Icons.play_arrow, size: 60.0),
+                        ? Icon(Icons.pause, size: 60.0, color: widget.iconColor)
+                        : Icon(Icons.play_arrow, size: 60.0, color: widget.iconColor),
                     onPressed: () {
                       setState(() {
                         _controller.value.isPlaying
@@ -346,7 +353,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                     top: videoHeight - 80, left: videoWidth + videoMargin - 50),
                 child: IconButton(
                     alignment: AlignmentDirectional.center,
-                    icon: Icon(Icons.fullscreen, size: 30.0),
+                    icon: Icon(Icons.fullscreen, size: 30.0, color: widget.iconColor),
                     onPressed: () {
                       setState(() {
                         _controller.pause();
@@ -364,7 +371,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               Container(
                 margin: EdgeInsets.only(left: videoWidth + videoMargin - 48),
                 child: IconButton(
-                    icon: Icon(Icons.settings, size: 26.0),
+                    icon: Icon(Icons.settings, size: 26.0, color: widget.iconColor),
                     onPressed: () {
                       position = _controller.value.position.inSeconds;
                       _seek = true;
@@ -394,10 +401,9 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.position.inMinutes.toString() +
-                    ':' +
-                    (value.position.inSeconds - value.position.inMinutes * 60)
-                        .toString()),
+                child: Text(
+                  '${_asTwoDigits(value.position.inMinutes)}:${_asTwoDigits(value.position.inSeconds - value.position.inMinutes * 60)}',
+                ),
               ),
               Container(
                 height: 20,
@@ -406,9 +412,9 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                   _controller,
                   allowScrubbing: true,
                   colors: VideoProgressColors(
-                    playedColor: Color(0xFF22A3D2),
+                     playedColor: widget.sliderPlayedColor == null ? Color(0xFF22A3D2) : widget.sliderPlayedColor,
                     backgroundColor: Color(0x5515162B),
-                    bufferedColor: Color(0x5583D8F7),
+                    bufferedColor: widget.sliderBufferedColor == null ?Color(0x5583D8F7): widget.sliderBufferedColor,
                   ),
                   padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
                 ),
@@ -416,10 +422,17 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.duration.inMinutes.toString() +
-                    ':' +
-                    (value.duration.inSeconds - value.duration.inMinutes * 60)
-                        .toString()),
+<<<<<<< HEAD
+
+                child: Text(
+                  '${_asTwoDigits(value.duration.inMinutes)}:${_asTwoDigits(value.duration.inSeconds - value.duration.inMinutes * 60)}',
+                ),
+
+
+                child: Text(
+                  '${_asTwoDigits(value.duration.inMinutes)}:${_asTwoDigits(value.duration.inSeconds - value.duration.inMinutes * 60)}',
+                ),
+
               ),
             ],
           );

@@ -1,7 +1,8 @@
-name: vimeoplayer
-description: A new Flutter package for playing any videos from Vimeo by id.
+name: vimeoplayer_trinity
+description: A new Flutter package for playing any videos from Vimeo by id. Forked from Prilogy
 version: 0.1.8
-homepage: https://github.com/prilogy/vimeo_player
+homepage: https://github.com/blackgeneration/vimeo_player
+author: blackgeneration
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -11,6 +12,7 @@ dependencies:
     sdk: flutter
   video_player: '>=0.10.0 <2.0.0'
   http: ^0.12.1
+  # cupertino_icons: ^1.0.0 # Remove this
 
 dev_dependencies:
   flutter_test:
@@ -52,3 +54,4 @@ flutter:
   #
   # For details regarding fonts in packages, see
   # https://flutter.dev/custom-fonts/#from-packages
+  # uses-material-design: true   #remove this

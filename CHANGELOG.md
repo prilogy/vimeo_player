@@ -1,3 +1,8 @@
+## [0.2.0] - Added support for null-safety
+
+### Fixed
+* Also upgraded dependencies.
+
 ## [0.1.8] - Fixed bugs
 
 ### Fixed

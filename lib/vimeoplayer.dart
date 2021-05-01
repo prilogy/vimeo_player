@@ -72,7 +72,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
       _qualityValues = value;
       _qualityValue = value[value.lastKey()];
       _controller = VideoPlayerController.network(_qualityValue);
-      _controller!.setLooping(looping!);
+      _controller!.setLooping(looping == null ? false : true);
       if (autoPlay!) _controller!.play();
       initFuture = _controller!.initialize();
 

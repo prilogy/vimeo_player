@@ -21,7 +21,6 @@ class VideoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomPadding: false,
         backgroundColor: Color(0xFF15162B), //FF15162B // 0xFFF2F2F2
         appBar: MediaQuery.of(context).orientation == Orientation.portrait
             ? AppBar(
